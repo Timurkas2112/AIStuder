@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons (опционально) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">AIStuder</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Мои курсы</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Статистика</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Уведомления</a>
+          </li>
+        </ul>
+
+
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Настройки
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+              <li class="dropdown-submenu position-relative">
+                <a class="dropdown-item dropdown-toggle custom-text-settings" href="#">Изменить текст</a>
+                <ul class="dropdown-menu submenu">
+                  <li class="px-3 py-2">
+                    <label for="fontSelect" class="form-label">Шрифт:</label>
+                    <select id="fontSelect" class="form-select form-select-sm">
+                      <option value="Arial">Arial</option>
+                      <option value="Georgia">Georgia</option>
+                      <option value="Times New Roman">Times New Roman</option>
+                      <option value="Courier New">Courier New</option>
+                      <option value="Verdana">Verdana</option>
+                    </select>
+                  </li>
+                  <li class="px-3 py-2">
+                    <label for="fontSizeSlider" class="form-label">
+                      Размер: <span id="fontSizeValue">16</span>px
+                    </label>
+                    <input type="range" class="form-range" min="12" max="30" step="1" id="fontSizeSlider">
+                  </li>
+                </ul>
+              </li>
+              <li><a class="dropdown-item" href="#">Другая настройка</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Мой профиль</a>
+          </li>
+        </ul>
+      
+      </div>
+    </div>
+  </nav>
+
+
+<div id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  {% for chapter in book_content %}
+  <a href="/#chapter{{ chapter.chapter }}" onclick="showChapter('chapter{{ chapter.chapter }}')">{{ chapter.chapter }}. {{ chapter.title }}</a>
+  {% endfor %}
+</div>
+<span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776;</span>
+{% block content %}{% endblock %}
+
+
+<script>
+
+function openNav() {
+  document.getElementById("mySidenav").style.width = "250px";
+}
+
+function closeNav() {
+  document.getElementById("mySidenav").style.width = "0";
+}
+// Показ конкретной главы
+  function showChapter(chapterId) {
+    // Убираем класс active у всех глав
+    document.querySelectorAll('.chapter').forEach((chapter) => {
+      chapter.classList.remove('active');
+    });
+
+    // Добавляем класс active нужной главе
+    const targetChapter = document.getElementById(chapterId);
+    if (targetChapter) {
+      targetChapter.classList.add('active');
+    }
+  }
+
+  // Автоматическая активация главы при загрузке страницы
+  function activateChapterFromURL() {
+    const hash = window.location.hash; // Получаем якорь из URL
+    if (hash) {
+      const chapterId = hash.substring(1); // Убираем символ #
+      showChapter(chapterId); // Активируем главу
+    }
+  }
+
+  // Событие загрузки страницы
+  window.addEventListener('DOMContentLoaded', activateChapterFromURL);
+
+  // Событие изменения якоря в URL
+  window.addEventListener('hashchange', activateChapterFromURL);
+
+
+  const fontSelect = document.getElementById('fontSelect');
+  const fontSizeSlider = document.getElementById('fontSizeSlider');
+  const fontSizeValue = document.getElementById('fontSizeValue');
+
+  function applyFontSettings() {
+  const font = fontSelect.value;
+  const size = fontSizeSlider.value + 'px';
+
+  // Обновляем текст в спане рядом с ползунком
+  fontSizeValue.textContent = fontSizeSlider.value;
+
+  // Меняем стиль у всех глав и вложенных элементов
+  document.querySelectorAll('.chapter').forEach((chapter) => {
+    chapter.style.fontFamily = font;
+    chapter.style.fontSize = size;
+
+    // Также меняем размер у вложенных h2 и p
+    chapter.querySelectorAll('h2, p').forEach((el) => {
+      el.style.fontFamily = font;
+      el.style.fontSize = size;
+    });
+  });
+
+  // Сохраняем в localStorage
+  localStorage.setItem('chapterFont', font);
+  localStorage.setItem('chapterFontSize', size);
+}
+
+  fontSelect.addEventListener('change', applyFontSettings);
+  fontSizeSlider.addEventListener('input', applyFontSettings);
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedFont = localStorage.getItem('chapterFont');
+    const savedSize = localStorage.getItem('chapterFontSize');
+
+    if (savedFont) fontSelect.value = savedFont;
+    if (savedSize) {
+      fontSizeSlider.value = parseInt(savedSize);
+      fontSizeValue.textContent = parseInt(savedSize);
+    }
+
+    applyFontSettings();
+  });
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,56 @@
+{% extends "main.html" %}
+
+{% block content %}
+<style>
+.button {
+  border-radius: 8px;
+  background-color: #2196F3;
+  border: none;
+  color: #FFFFFF;
+  text-align: center;
+  font-size: 15px;
+  padding: 20px;
+  width: 180px;
+  transition: all 0.5s;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.button span {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  transition: 0.5s;
+}
+
+.button span:after {
+  content: '\00bb';
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: -20px;
+  transition: 0.5s;
+}
+
+.button:hover span {
+  padding-right: 25px;
+}
+
+.button:hover span:after {
+  opacity: 1;
+  right: 0;
+}
+</style>
+<div class="content">
+    {% for chapter in book_content %}
+      <div id="chapter{{ chapter.chapter }}" class="chapter">
+        <h2>{{ chapter.title }}</h2>
+        <p>{{ chapter.content|safe }}</p>
+          <a href="{{ url_for('quiz') }}">
+          <button class="button"><span>Пройти тест</span></button>
+              </a>
+      </div>
+    {% endfor %}
+</div>
+</div>
+{% endblock %}

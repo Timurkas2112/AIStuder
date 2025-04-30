@@ -1,0 +1,84 @@
+{% extends "main.html" %}
+
+{% block content %}
+<head>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/quiz.css') }}" />
+</head>
+<div class="content">
+    <h1>{{ quiz_title }}</h1>
+
+<form id="quizForm">
+    {% for question in questions %}
+        <div id="question-{{ question['id'] }}" class="question-block">
+            <h2>{{ question['question_text'] }}</h2>
+            {% for option in question['options'] %}
+                <label class="quiz">{{ option }}
+                    <input type="radio" name="{{ question['id'] }}" value="{{ option }}">
+                    <span class="checkmark"></span>
+                </label><br>
+            {% endfor %}
+            <button class="btn success" type="button" onclick="checkAnswer('{{ question['id'] }}')">Проверить</button>
+            <div id="result-{{ question['id'] }}" class="result" style="margin-top: 10px; display: none;"></div>
+        </div>
+    {% endfor %}
+</form>
+
+<div id="result" style="margin-top: 20px; display: none;">
+    <h2>Результат:</h2>
+    <p id="score"></p>
+</div>
+</div>
+<script>
+
+    // Добавляем обработчик события отправки формы
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+        const submitButton = document.getElementById('submitButton');
+
+        // Отключаем кнопку после первого нажатия
+        submitButton.disabled = true;
+
+        // Изменяем текст кнопки (опционально)
+        submitButton.textContent = 'Отправляется...';
+    });
+    const correctAnswers = {
+        {% for question in questions %}
+        "{{ question['id'] }}": "{{ question['correct_answer'] }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+    const explanations = {
+        {% for question in questions %}
+        "{{ question['id'] }}": "{{ question['explanation'] }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+    function checkAnswer(questionId) {
+    // Получаем выбранный вариант ответа
+    const selectedOption = document.querySelector(`input[name="${questionId}"]:checked`);
+    const resultDiv = document.getElementById(`result-${questionId}`);
+
+    if (!selectedOption) {
+        // Если ничего не выбрано, показываем сообщение
+        resultDiv.innerHTML = '<p style="color: red;">Пожалуйста, выберите вариант ответа.</p>';
+        resultDiv.style.display = 'block';
+        return;
+    }
+
+    // Проверяем ответ
+    const userAnswer = selectedOption.value;
+    let resultText = '';
+    let explanationText = explanations[questionId]; // Получаем объяснение для вопроса
+
+    if (userAnswer === correctAnswers[questionId]) {
+        resultText = '<p style="color: green;">Правильно!</p>';
+    } else {
+        resultText = '<p style="color: red;">Неправильно. Попробуйте ещё раз.</p>';
+    }
+
+    // Добавляем объяснение (всегда показываем, независимо от правильности ответа)
+    let explanationHtml = `<p style="color: black;">Объяснение: ${explanationText}</p>`;
+
+    // Отображаем результат и объяснение
+    resultDiv.innerHTML = resultText + explanationHtml;
+    resultDiv.style.display = 'block';
+}
+</script>
+{% endblock %}
