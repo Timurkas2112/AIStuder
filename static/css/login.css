@@ -88,3 +88,27 @@ body{
 .signup label:hover{
   text-decoration: underline;
 }
+.form select {
+    height: 60px;
+    width: 100%;
+    padding: 0 15px;
+    font-size: 17px;
+    margin-bottom: 1.3rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    outline: none;
+    background-color: #fff;
+    color: #333;
+    font-family: 'Poppins', sans-serif;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%204%205'%3E%3Cpath%20fill='%23009579'%20d='M2%200L0%202h4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 10px;
+  }
+  
+  .form select:focus {
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    border-color: #009579;
+  }
+  
