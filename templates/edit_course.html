@@ -1,0 +1,59 @@
+{% extends "main.html" %}
+
+{% block content %}
+<style>
+.edit-form {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.edit-form textarea,
+.edit-form input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
+
+.edit-form h3 {
+  margin-top: 30px;
+  color: #333;
+}
+
+.edit-form .submit-btn {
+  padding: 12px 20px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.edit-form .submit-btn:hover {
+  background-color: #1976D2;
+}
+</style>
+
+<div class="edit-form">
+  <form method="POST" action="{{ url_for('edit_course', id=course_id) }}">
+    {% for chapter in book_content %}
+      <div class="chapter-block">
+        <h3>Глава {{ loop.index }}</h3>
+
+        <label>Заголовок</label>
+        <input type="text" name="title_{{ chapter.chapter_id }}" value="{{ chapter.title }}" required>
+
+        <label>Содержание</label>
+        <textarea name="content_{{ chapter.chapter_id }}" rows="8" required>{{ chapter.content }}</textarea>
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="submit-btn">Сохранить изменения</button>
+  </form>
+</div>
+{% endblock %}

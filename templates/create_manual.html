@@ -1,0 +1,213 @@
+{% extends "main.html" %}
+
+{% block content %}
+<style>
+    .form label {
+        font-size: 16px;
+        margin-bottom: 6px;
+        display: block;
+        color: #333;
+    }
+
+    .form input[type="text"],
+    .form textarea {
+        height: 60px;
+        width: 100%;
+        padding: 0 15px;
+        font-size: 17px;
+        margin-bottom: 1.3rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        outline: none;
+        background-color: #fff;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .form textarea {
+        height: 120px;
+        resize: vertical;
+    }
+
+    .form input.button {
+        color: #fff;
+        background: linear-gradient(135deg, #009579, #007965);
+        font-size: 1.2rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-top: 1.5rem;
+        cursor: pointer;
+        transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+        border: none;
+        border-radius: 8px;
+        height: 60px;
+        width: 100%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .form input.button:hover {
+        background: linear-gradient(135deg, #007965, #005f4a);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .form input.button:active {
+        transform: scale(0.98);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .manual-button {
+        display: inline-block;
+        background: #fff;
+        color: #009579;
+        padding: 12px 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        border: 2px solid #009579;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .manual-button:hover {
+        background-color: #009579;
+        color: #fff;
+    }
+
+    #addChapterButton {
+        display: inline-block;
+        background-color: #007965;
+        color: white;
+        padding: 12px 25px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+        margin-top: 15px;
+    }
+
+    #addChapterButton:hover {
+        background-color: #005f4a;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    #addChapterButton:active {
+        transform: scale(0.98);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .form .addChapter {
+        margin-bottom: 2rem;
+        position: relative;
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    .remove-chapter-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 6px 10px;
+        cursor: pointer;
+    }
+
+    .remove-chapter-btn:hover {
+        background-color: #c0392b;
+    }
+</style>
+
+<div class="content">
+    <form class="form" action="{{ url_for('create_manual') }}" method="POST">
+        <h3>Создание курса вручную</h3>
+
+        <!-- Название курса -->
+        <label for="courseTitle">Название курса:</label>
+        <input type="text" id="courseTitle" name="courseTitle" placeholder="Введите название курса" required>
+
+        <!-- Секции глав курса -->
+        <div id="chaptersContainer">
+            <div class="addChapter">
+                <button type="button" class="remove-chapter-btn">Удалить</button>
+                <label for="chapterTitle1">Название главы 1:</label>
+                <input type="text" id="chapterTitle1" name="chapterTitle1" placeholder="Введите название главы" required>
+
+                <label for="chapterContent1">Текст главы 1:</label>
+                <textarea id="chapterContent1" name="chapterContent1" placeholder="Введите текст главы" required></textarea>
+            </div>
+        </div>
+
+        <!-- Кнопка добавления главы -->
+        <button type="button" id="addChapterButton">Добавить главу</button>
+
+        <!-- Кнопка отправки формы -->
+        <input type="submit" class="button" value="Сохранить курс">
+    </form>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <p>Или</p>
+        <a href="{{ url_for('create_course') }}" class="manual-button">Назад к созданию курса</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const chaptersContainer = document.getElementById('chaptersContainer');
+
+        // Функция создания главы с правильным номером
+        function createChapter(index) {
+            const chapter = document.createElement('div');
+            chapter.classList.add('addChapter');
+            chapter.innerHTML = `
+                <button type="button" class="remove-chapter-btn">Удалить</button>
+                <label>Название главы ${index}:</label>
+                <input type="text" name="chapterTitle${index}" placeholder="Введите название главы" required>
+                <label>Текст главы ${index}:</label>
+                <textarea name="chapterContent${index}" placeholder="Введите текст главы" required></textarea>
+            `;
+
+            // Кнопка удаления
+            chapter.querySelector('.remove-chapter-btn').addEventListener('click', () => {
+                chapter.remove();
+                updateChapterNumbers();  // Обновить нумерацию после удаления
+            });
+
+            return chapter;
+        }
+
+        // Функция обновления номеров глав
+        function updateChapterNumbers() {
+            const chapters = chaptersContainer.querySelectorAll('.addChapter');
+            chapters.forEach((chapter, index) => {
+                const number = index + 1;
+                chapter.querySelector('label:nth-of-type(1)').textContent = `Название главы ${number}:`;
+                chapter.querySelector('input').name = `chapterTitle${number}`;
+                chapter.querySelector('label:nth-of-type(2)').textContent = `Текст главы ${number}:`;
+                chapter.querySelector('textarea').name = `chapterContent${number}`;
+            });
+        }
+
+        // Добавить новую главу
+        document.getElementById('addChapterButton').addEventListener('click', () => {
+            const currentChapters = chaptersContainer.querySelectorAll('.addChapter').length;
+            const newChapter = createChapter(currentChapters + 1);
+            chaptersContainer.appendChild(newChapter);
+        });
+
+        // Инициализировать удаление первой главы
+        const firstRemoveBtn = document.querySelector('.remove-chapter-btn');
+        if (firstRemoveBtn) {
+            firstRemoveBtn.addEventListener('click', function () {
+                this.closest('.addChapter').remove();
+                updateChapterNumbers();
+            });
+        }
+    });
+</script>
+{% endblock %}

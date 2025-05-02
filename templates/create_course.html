@@ -1,0 +1,179 @@
+{% extends "main.html" %}
+
+{% block content %}
+<style>
+    .form label {
+  font-size: 16px;
+  margin-bottom: 6px;
+  display: block;
+  color: #333;
+}
+
+.form input[type="file"],
+.form select {
+  height: 60px;
+  width: 100%;
+  padding: 0 15px;
+  font-size: 17px;
+  margin-bottom: 1.3rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  background-color: #fff;
+  font-family: 'Poppins', sans-serif;
+}
+
+.form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%204%205'%3E%3Cpath%20fill='%23009579'%20d='M2%200L0%202h4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 10px;
+}
+
+.form input[type="file"]:focus,
+.form select:focus {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  border-color: #009579;
+}
+.file-drop-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  padding: 20px;
+  border: 2px dashed #009579;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  margin-bottom: 1.3rem;
+  transition: background-color 0.3s ease;
+}
+
+.file-drop-area:hover {
+  background-color: #f1f1f1;
+}
+
+.file-msg {
+  font-size: 16px;
+  color: #555;
+  text-align: center;
+  pointer-events: none;
+}
+
+.file-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+}
+.form input[type="text"] {
+  height: 60px;
+  width: 100%;
+  padding: 0 15px;
+  font-size: 17px;
+  margin-bottom: 1.3rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  background-color: #fff;
+  font-family: 'Poppins', sans-serif;
+}
+.form input.button {
+  color: #fff;
+  background: linear-gradient(135deg, #009579, #007965);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-top: 1.5rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+  border: none;
+  border-radius: 8px;
+  height: 60px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.form input.button:hover {
+  background: linear-gradient(135deg, #007965, #005f4a);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+.form input.button:active {
+  transform: scale(0.98);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+.manual-button {
+  display: inline-block;
+  background: #fff;
+  color: #009579;
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid #009579;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.manual-button:hover {
+  background-color: #009579;
+  color: #fff;
+}
+
+</style>
+<div class="content">
+<form class="form" action="#" method="POST" enctype="multipart/form-data">
+    <h3>Создание курса</h3>
+  
+    <!-- Загрузка материалов -->
+    <label for="courseFile">Загрузить материалы:</label>
+<div class="file-drop-area">
+  <span class="file-msg">Перетащите файлы сюда или нажмите для выбора (PDF, DOC, DOCX, TXT)</span>
+  <input class="file-input" type="file" id="courseFile" name="courseFile" accept=".pdf,.doc,.docx,.txt" required>
+</div>
+  
+<!-- Тема курса -->
+<label for="courseTitle">Тема курса:</label>
+<input type="text" id="courseTitle" name="courseTitle" placeholder="Введите тему курса" required>
+
+<!-- Предпочтения -->
+<label for="preferences">Предпочтения:</label>
+<input type="text" id="preferences" name="preferences" placeholder="Укажите предпочтения (например, стиль изложения)">
+
+  
+    <!-- Группа студентов -->
+    <label for="studentGroup">Группа студентов:</label>
+    <select id="studentGroup" name="studentGroup" required>
+      <option value="">Выберите группу</option>
+      <option value="1 курс">1 курс</option>
+      <option value="2 курс">2 курс</option>
+      <option value="3 курс">3 курс</option>
+      <option value="4 курс">4 курс</option>
+      <option value="магистратура">Магистратура</option>
+    </select>
+  
+    <!-- Тип генерируемого контента -->
+    <label for="contentType">Тип контента:</label>
+    <select id="contentType" name="contentType" required>
+    <option value="lecture_quiz">Лекции + тесты</option>
+    <option value="lecture">Лекции</option>
+    <option value="quiz">Тесты</option>
+    <option value="summary">Экзамен</option>
+    </select>
+  
+    <!-- Кнопка -->
+    <input type="submit" class="button" value="Сгенерировать материалы">
+  </form>
+  <div style="text-align: center; margin-top: 20px;">
+    <p>Или</p>
+    <a href="{{ url_for('create_manual') }}" class="manual-button">Создать вручную</a>
+  </div>  
+</div>
+{% endblock %}

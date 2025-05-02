@@ -1,0 +1,32 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="content">
+  <h3>Редактирование теста</h3>
+
+  <form action="/edit_test/{{ test.id }}" method="POST">
+    <div class="form">
+      <!-- ID (скрытый) -->
+      <input type="hidden" name="id" value="{{ test.id }}">
+
+      <!-- Вопрос -->
+      <label for="question_text">Вопрос:</label>
+      <input type="text" id="question_text" name="question_text" value="{{ test.question_text }}" required>
+
+      <!-- Варианты ответов -->
+      <label for="options">Варианты ответов:</label>
+      <textarea id="options" name="options" rows="4" required>{{ test.options }}</textarea>
+
+      <!-- Правильный ответ -->
+      <label for="correct_answer">Правильный ответ:</label>
+      <input type="text" id="correct_answer" name="correct_answer" value="{{ test.correct_answer }}" required>
+
+      <!-- Объяснение -->
+      <label for="explanation">Объяснение:</label>
+      <textarea id="explanation" name="explanation" rows="4" required>{{ test.explanation }}</textarea>
+
+      <input type="submit" value="Сохранить изменения" class="button">
+    </div>
+  </form>
+</div>
+{% endblock %}
