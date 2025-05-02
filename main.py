@@ -1,141 +1,7 @@
-from flask import Flask, render_template, request, redirect, flash
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
+from flask import Flask, render_template, request, redirect, flash, session
 import markdown
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost:5433/AIStuder'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'secret_key'
-
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-
-class Group(db.Model):
-    __tablename__ = 'groups'
-    group_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-
-
-class User(db.Model):
-    __tablename__ = "users"
-    user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False, unique=True)
-    email = db.Column(db.String(100), nullable=False, unique=True)
-    password = db.Column(db.String(200), nullable=False)
-    university = db.Column(db.String(200))
-    role = db.Column(db.String(20), nullable=False)
-
-
-
-class Course(db.Model):
-    __tablename__ = 'courses'
-    course_id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255), nullable=False)
-    teacher_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
-    group_id = db.Column(db.Integer, db.ForeignKey('groups.group_id'), nullable=True)
-
-    chapters = db.relationship('CourseChapter', backref='course', cascade="all, delete-orphan")
-
-
-class CourseChapter(db.Model):
-    __tablename__ = 'course_chapters'
-    chapter_id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('courses.course_id', ondelete="CASCADE"), nullable=False)
-    chapter_number = db.Column(db.Integer, nullable=False)
-    title = db.Column(db.String(255), nullable=False)
-    content = db.Column(db.Text)
-
-quiz_data = {
-    'title': 'Работа со строками и списками в Python',
-    'questions': [
-        {
-            'id': 1,
-            'question_text': 'Какой оператор используется для конкатенации (объединения) строк в Python?',
-            'options': ['+', '-', '*', '/'],
-            'correct_answer': '+',
-            'explanation': 'Оператор "+" используется для сложения (конкатенации) строк.'
-        },
-        {
-            'id': 2,
-            'question_text': 'Что произойдет, если применить оператор "*" к строке и числу?',
-            'options': [
-                'Возникнет ошибка',
-                'Строка будет повторена указанное число раз',
-                'Строка будет умножена на число',
-                'Число будет добавлено к строке'
-            ],
-            'correct_answer': 'Строка будет повторена указанное число раз',
-            'explanation': 'Оператор "*" повторяет строку указанное количество раз.'
-        },
-        {
-            'id': 3,
-            'question_text': 'Как получить доступ к третьему символу строки "Python"?',
-            'options': ['string[3]', 'string[2]', 'string[-3]', 'string[4]'],
-            'correct_answer': 'string[2]',
-            'explanation': 'Индексация в Python начинается с 0.  Третий символ имеет индекс 2.'
-        },
-        {
-            'id': 4,
-            'question_text': 'Какой метод используется для преобразования строки в верхний регистр?',
-            'options': ['lower()', 'upper()', 'capitalize()', 'title()'],
-            'correct_answer': 'upper()',
-            'explanation': 'Метод upper() преобразует строку в верхний регистр.'
-        },
-        {
-            'id': 5,
-            'question_text': 'Что возвращает метод `split()` для строки "Это строка с пробелами"?',
-            'options': [
-                '"Это строка с пробелами"',
-                '["Это", "строка", "с", "пробелами"]',
-                '["Это строка с пробелами"]',
-                'Ошибка'
-            ],
-            'correct_answer': '["Это", "строка", "с", "пробелами"]',
-            'explanation': 'Метод split() разделяет строку на список подстрок по разделителю (пробелу по умолчанию).'
-        },
-        {
-            'id': 6,
-            'question_text': 'Как добавить элемент в конец списка?',
-            'options': ['list.append(element)', 'list.insert(0, element)', 'list.extend(element)', 'list.add(element)'],
-            'correct_answer': 'list.append(element)',
-            'explanation': 'Метод append() добавляет элемент в конец списка.'
-        },
-        {
-            'id': 7,
-            'question_text': 'Какой метод удаляет и возвращает последний элемент списка?',
-            'options': ['list.remove()', 'list.pop()', 'list.del()', 'list.delete()'],
-            'correct_answer': 'list.pop()',
-            'explanation': 'Метод pop() удаляет и возвращает последний элемент списка (или элемент по указанному индексу).'
-        },
-        {
-            'id': 8,
-            'question_text': 'Являются ли списки в Python изменяемыми?',
-            'options': ['Да', 'Нет'],
-            'correct_answer': 'Да',
-            'explanation': 'Списки в Python являются изменяемыми, в отличие от строк.'
-        },
-        {
-            'id': 9,
-            'question_text': 'Что такое срезы (slices) в Python?',
-            'options': [
-                'Способ удаления элементов из списка',
-                'Способ извлечения подпоследовательности из строки или списка',
-                'Способ сортировки списка',
-                'Способ объединения списков'
-            ],
-            'correct_answer': 'Способ извлечения подпоследовательности из строки или списка',
-            'explanation': 'Срезы позволяют извлечь часть строки или списка.'
-        },
-        {
-            'id': 10,
-            'question_text': 'Можно ли в одном списке хранить элементы разных типов данных?',
-            'options': ['Да', 'Нет'],
-            'correct_answer': 'Да',
-            'explanation': 'Списки в Python могут содержать элементы различных типов данных.'
-        }
-    ]
-}
+from classes import app, User, Group, GroupMember, GroupTeacher, Course, CourseChapter, bcrypt, db
+from sqlalchemy.orm import joinedload
 
 def update_chapter(chapter_id, title, content):
     chapter = CourseChapter.query.get(chapter_id)
@@ -152,10 +18,13 @@ def update_course(course_id, chapter, title, content):
 def get_course_chapters(course_id):
     return CourseChapter.query.filter_by(course_id=course_id).order_by(CourseChapter.chapter_number).all()
 
-# @app.route('/')
-# def index():
-#     return render_template("content.html", book_content=book_content)
-
+@app.context_processor
+def inject_user():
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+    return dict(current_user=user)
+    
 @app.route('/')
 def index():
     return render_template("login.html")
@@ -174,8 +43,9 @@ def auth():
         ).first()
 
         if user and bcrypt.check_password_hash(user.password, password):
+            session['user_id'] = user.user_id  # сохраняем ID пользователя в сессии
             flash('Успешный вход!', 'success')
-            return redirect('/')
+            return redirect('/my_courses')
         else:
             flash('Неверный email/имя пользователя или пароль', 'error')
             return redirect('/')
@@ -211,12 +81,62 @@ def auth():
     flash('Неверная форма', 'error')
     return redirect('/')
 
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('Вы вышли из аккаунта.', 'success')
+    return redirect('/')
 
 @app.route('/create_course')
 def create_course():
     return render_template("create_course.html")
 
 
+@app.route('/create_group', methods=['GET', 'POST'])
+def create_group():
+    if 'user_id' not in session:
+        flash('Вы должны войти в систему', 'error')
+        return redirect('/')
+
+    current_user = User.query.get(session['user_id'])
+    if current_user.role != 'teacher':
+        flash('Только преподаватели могут создавать группы', 'error')
+        return redirect('/')
+
+    if request.method == 'POST':
+        group_name = request.form['group_name']
+
+        # Создание новой группы
+        new_group = Group(name=group_name)
+        db.session.add(new_group)
+        db.session.flush()  # Нужно, чтобы получить group_id до связывания
+
+        # Добавление студентов
+        student_ids_raw = request.form.get('students', '')
+        student_ids = [int(sid) for sid in student_ids_raw.split(',') if sid.strip().isdigit()]
+        for student_id in student_ids:
+            student = User.query.get(student_id)
+            if student and student.role == 'student':
+                new_group.members.append(student)
+
+        # Автоматическое добавление текущего преподавателя
+        new_group.teachers.append(current_user)
+
+        db.session.commit()
+        flash('Группа успешно создана!', 'success')
+        return redirect('/view_groups')
+
+    # GET-запрос: отдаём только список студентов
+    students = User.query.filter_by(role='student').all()
+    return render_template('create_group.html', students=students)
+
+
+
+# Страница для просмотра всех групп
+@app.route('/view_groups')
+def view_groups():
+    groups = Group.query.all()
+    return render_template('view_groups.html', groups=groups)
 
 
 @app.route('/quiz')
@@ -225,19 +145,44 @@ def quiz():
 
 @app.route("/my_courses")
 def my_courses():
-    courses = Course.query.all()
+    user_id = session.get('user_id')
+    
+    if not user_id:
+        flash("Сначала войдите в систему", "error")
+        return redirect('/')
+
+    user = User.query.get(user_id)
+    session['role'] = user.role
+    # Получаем список групп пользователя
+    if user.role == 'student':
+        group_ids = [g.group_id for g in user.students_in_groups]
+    elif user.role == 'teacher':
+        group_ids = [g.group_id for g in user.groups_as_teacher]
+    else:
+        group_ids = []
+
+    # Получаем только курсы из этих групп
+    courses = Course.query.options(
+        joinedload(Course.group),
+        joinedload(Course.teacher)
+    ).filter(Course.group_id.in_(group_ids)).all()
+
     return render_template("my_courses.html", courses=courses)
 
 
 
 @app.route("/create_manual", methods=["GET", "POST"])
 def create_manual():
-    if request.method == "POST":
+    selected_group_id = None
+    if request.method == 'POST':
+        group_id = int(request.form['group_id'])
+        selected_group_id = group_id
+
         title = request.form.get("courseTitle")
-        new_course = Course(title=title)
+        new_course = Course(title=title, group_id=group_id)
 
         db.session.add(new_course)
-        db.session.flush()  # Чтобы получить course_id до коммита
+        db.session.flush()  # Получить course_id
 
         chapters = []
         index = 1
@@ -260,7 +205,9 @@ def create_manual():
 
         return redirect('/my_courses')
 
-    return render_template("create_manual.html")
+    groups = Group.query.all()
+    return render_template('create_manual.html', groups=groups, selected_group_id=selected_group_id)
+
 
 
 
@@ -297,26 +244,39 @@ def answers():
 
 @app.route('/edit_course/<int:id>', methods=['GET', 'POST'])
 def edit_course(id):
+    course = Course.query.get_or_404(id)
+    book_content = get_course_chapters(course_id=id)
+    groups = Group.query.all()
+    selected_group_id = course.group_id if course.group_id else None
+
     if request.method == 'POST':
+        # Обновляем главы
         for key in request.form:
             if key.startswith("title_"):
                 parts = key.split("_")
                 if len(parts) < 2 or not parts[1].isdigit():
-                    continue  # пропустить некорректные ключи
-
+                    continue
                 chapter_id = int(parts[1])
                 title = request.form[key]
                 content = request.form.get(f"content_{chapter_id}")
-
                 update_chapter(chapter_id, title, content)
+
+        # Обновляем группу курса
+        group_id = request.form.get("group_id")
+        if group_id and group_id.isdigit():
+            course.group_id = int(group_id)
+            db.session.commit()
 
         return redirect('/my_courses')
 
+    return render_template(
+        "edit_course.html",
+        book_content=book_content,
+        course_id=id,
+        groups=groups,
+        selected_group_id=selected_group_id
+    )
 
-    # Предположим, ты получаешь главы вот так:
-    book_content = get_course_chapters(course_id=id)
-
-    return render_template("edit_course.html", book_content=book_content, course_id=id)
 
 
 
