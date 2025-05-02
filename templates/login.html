@@ -1,49 +1,66 @@
 <!DOCTYPE html>
-<!-- Coding By CodingNepal - codingnepalweb.com -->
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
   <title>Login & Registration Form</title>
-  <!---Custom CSS File--->
-  <link rel="stylesheet" href="static/css/login.css">
+  <link rel="stylesheet" href="static/css/login.css" />
 </head>
 <body>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-wrapper">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>    
+    {% endif %}
+  {% endwith %}
   <div class="container">
-    <input type="checkbox" id="check">
+    <input type="checkbox" id="check" />
+
+    <!-- Login Form -->
     <div class="login form">
       <header>AIStuder</header>
-      <form action="#">
-        <input type="text" placeholder="Enter your email or username">
-        <input type="password" placeholder="Enter your password">
+      <form action="/auth" method="POST">
+        <input type="hidden" name="form_type" value="login" />
+        <input type="text" name="email" placeholder="Enter your email or username" required />
+        <input type="password" name="password" placeholder="Enter your password" required />
         <a href="#">Забыли пароль?</a>
-        <input type="button" class="button" value="Войти">
+        <input type="submit" class="button" value="Войти" />
       </form>
       <div class="signup">
         <span class="signup">У вас нет аккаунта?
-         <label for="check">Зарегистрироваться</label>
+          <label for="check">Зарегистрироваться</label>
         </span>
       </div>
     </div>
+
+    <!-- Registration Form -->
     <div class="registration form">
       <header>AIStuder</header>
-      <form action="#">
-        <input type="text" placeholder="Enter your email">
-        <input type="text" placeholder="Create your username">
-        <input type="text" placeholder="Enter your university">
+      <form action="/auth" method="POST">
+        <input type="hidden" name="form_type" value="register" />
+        <input type="text" name="email" placeholder="Enter your email" required />
+        <input type="text" name="username" placeholder="Create your username" required />
+        <input type="text" name="university" placeholder="Enter your university" />
         <select name="role" class="form-select mb-3" required>
-            <option value="" disabled selected>Выберите роль</option>
-            <option value="student">Студент</option>
-            <option value="teacher">Преподаватель</option>
-          </select>
-        <input type="password" placeholder="Create a password">
-        <input type="password" placeholder="Confirm your password">
-        <input type="button" class="button" value="Регистрация">
+          <option value="" disabled selected>Выберите роль</option>
+          <option value="student">Студент</option>
+          <option value="teacher">Преподаватель</option>
+        </select>
+        <input type="password" name="password" placeholder="Create a password" required />
+        <input type="password" name="confirm_password" placeholder="Confirm your password" required />
+        <input type="submit" class="button" value="Регистрация" />
       </form>
       <div class="signup">
         <span class="signup">Уже есть аккаунт?
-         <label for="check">Войти</label>
+          <label for="check">Войти</label>
         </span>
       </div>
     </div>

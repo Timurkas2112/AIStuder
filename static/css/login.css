@@ -111,4 +111,45 @@ body{
     box-shadow: 0 1px 0 rgba(0,0,0,0.2);
     border-color: #009579;
   }
+
+  
+  .flash-wrapper {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .flash {
+    padding: 15px 20px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    animation: fadeIn 0.4s ease forwards;
+  }
+  
+  /* Чёткие и контрастные цвета */
+  .flash.error {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+  }
+  
+  .flash.success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+  }
+  
+  /* Анимация только прозрачности */
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
   
