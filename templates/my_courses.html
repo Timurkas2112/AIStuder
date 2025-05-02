@@ -1,0 +1,165 @@
+{% extends "main.html" %}
+
+{% block content %}
+<style>
+  .courses-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .course-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px auto;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  width: fit-content;
+  min-width: 400px;
+  max-width: 90%;
+  box-sizing: border-box;
+}
+
+  .course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  }
+
+  .course-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #009579;
+    margin-bottom: 10px;
+  }
+
+  .course-group,
+  .course-preferences {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 6px;
+  }
+
+  .course-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .course-actions a {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    text-align: center;
+    border-radius: 6px;
+    text-decoration: none;
+    color: white;
+    transition: background 0.3s;
+  }
+
+  .btn-view {
+    background-color: #009579;
+  }
+  .btn-view:hover {
+    background-color: #007b63;
+  }
+
+  .btn-edit {
+    background-color: #f0ad4e;
+  }
+  .btn-edit:hover {
+    background-color: #ec971f;
+  }
+
+  .btn-delete {
+    background-color: #d9534f;
+  }
+  .btn-delete:hover {
+    background-color: #c9302c;
+  }
+
+  .create-course-container {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.create-course-button {
+  background-color: #4CAF50; /* зелёная кнопка */
+  color: white;
+  padding: 15px 30px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.create-course-button:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+.flash-message {
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  text-align: center;
+}
+.flash-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+.flash-message.danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+</style>
+
+<div class="content">
+  <h2 style="text-align: center; margin-top: 20px;">Мои курсы</h2>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div style="max-width: 800px; margin: 0 auto; padding: 10px;">
+      {% for category, message in messages %}
+        <div class="flash-message {{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+  <div class="courses-container">
+    {% for course in courses %}
+    <div class="course-card">
+      <div>
+        <div class="course-title">{{ course.title }}</div>
+        <div class="course-group"><strong>Группа:</strong> {{ course.group }}</div>
+        <div class="course-preferences"><strong>Предпочтения:</strong> {{ course.preferences or "Не указано" }}</div>
+      </div>
+      <div class="course-actions">
+        <a href="{{ url_for('view_course', course_id=course.course_id) }}" class="btn-view">Просмотр</a>
+        <a href="{{ url_for('edit_course', id=course.course_id) }}" class="btn-edit">Редактировать</a>
+        <a href="{{ url_for('delete_course', course_id=course.course_id) }}" class="btn-delete" onclick="return confirm('Удалить курс?');">Удалить</a>
+      </div>
+    </div>
+    {% else %}
+    <p>У вас пока нет курсов.</p>
+    {% endfor %}
+  </div>
+
+<!-- КНОПКА СОЗДАТЬ КУРС -->
+<div class="create-course-container">
+  <a href="{{ url_for('create_course') }}" class="create-course-button">Создать курс</a>
+</div>
+</div>
+{% endblock %}
