@@ -1,80 +1,50 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, flash
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 import markdown
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost:5433/AIStuder'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'secret_key'
 
-# Словарь с содержимым книги
-book_content = [
-    {'chapter': 1, 'title': 'Введение в Python', 'content': markdown.markdown("""**Введение в программирование и Python**
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
 
-Программирование - это процесс создания программ, которые могут выполнять различные задачи на компьютере. Программы могут быть простыми, такими как калькулятор, или весьма сложными, такими как операционные системы или компьютерные игры. Чтобы написать программу, необходимо понять, как работает компьютер и как он может выполнять инструкции.
+class Group(db.Model):
+    __tablename__ = 'groups'
+    group_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
 
-**Что такое программирование?**
 
-Программирование - это процесс создания алгоритмов, которые решают определенные задачи. Алгоритм - это шаг за шагом описанный план действий, который компьютер может выполнить. Алгоритмы могут быть представлены в виде текста, называемого кодом, который компьютер может интерпретировать и выполнять.
+class User(db.Model):
+    __tablename__ = "users"
+    user_id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), nullable=False, unique=True)
+    email = db.Column(db.String(100), nullable=False, unique=True)
+    password = db.Column(db.String(200), nullable=False)
+    university = db.Column(db.String(200))
+    role = db.Column(db.String(20), nullable=False)
 
-Программирование включает в себя несколько этапов:
 
-1. Анализ задачи - определение проблемы, которую нужно решить.
-2. Разработка алгоритма - создание шаг за шагом описанного плана действий.
-3. Реализация алгоритма - написание кода на языке программирования.
-4. Тестирование - проверка программы на ошибки и неправильное функционирование.
-5.DEBUG - поиск и исправление ошибок.
 
-** История программирования**
+class Course(db.Model):
+    __tablename__ = 'courses'
+    course_id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('groups.group_id'), nullable=True)
 
-Первые компьютеры были созданы в середине 20-го века, и с тех пор программирование стало важной частью нашей жизни. В 1950-х годах был разработан первый язык программирования - Фортран, который использовался для научных расчетов. В 1960-х годах появились языки программирования, такие как COBOL и LISP, которые использовались для бизнес-приложений и искусственного интеллекта соответственно.
+    chapters = db.relationship('CourseChapter', backref='course', cascade="all, delete-orphan")
 
-В 1970-х годах был разработан язык программирования C, который стал одним из самых популярных языков программирования. В 1980-х годах появились языки программирования, такие как Pascal и C++, которые использовались для разработки программ для домашних компьютеров.
 
-**Что такое Python?**
-
-Python - это язык программирования высокого уровня, который был разработан в конце 1980-х годов. Он был создан Гuido van Rossum, который хотел создать язык, который был бы простым в использовании и гибким. Python быстро стал популярным языком программирования, особенно среди научных и образовательных учреждений.
-
-Python - это язык с открытым исходным кодом, что означает, что его source code является открытым и доступным для всех. Это позволяет разработчикам по всему миру вносить вклад в развитие языка и создавать новые модули и библиотеки.
-
-**Преимущества Python**
-
-Python имеет несколько преимуществ, которые делают его популярным выбором для многих разработчиков:
-
-* Простота использования - Python имеет простой синтаксис, что делает его легким для изучения.
-* Гибкость - Python может быть использован для широкого спектра задач, от научных расчетов до веб-разработки.
-*PEED - Python имеет высокую производительность, что делает его подходящим для ресурсоемких задач.
-* Community - Python имеет большую и активную community, что означает, что есть много ресурсов для изучения и развития навыков.
-
-**Зачем изучать Python?**
-
-Python - это язык программирования, который используется в многих областях, включая:
-
-* Научные расчеты - Python используется в научных исследованиях для анализа данных и создания моделей.
-* Веб-разработка - Python используется для создания веб-сайтов и веб-приложений.
-* Машинное обучение - Python используется для создания моделей машинного обучения и искусственного интеллекта.
-* Образование - Python используется в образовательных учреждениях для обучения программированию.
-
-Изучение Python может помочь вам:
-
-* Получить новые навыки и знания
-* Развивать свою карьеру в области программирования
-* Создавать свои собственные программы и приложения
-* Улучшить свои навыки анализа данных и моделирования
-
-В следующих главах мы будем estudar Python более подробно, начиная с основ синтаксиса и заканчивая созданием сложных программ.
-""")},
-     {'chapter': 2, 'title': 'Установка и настройка среды разработки'},
-     {'chapter': 3, 'title': 'Базовые типы данных в Python'},
-     {'chapter': 4, 'title': 'Переменные, операторы присваивания и выражения'},
-     {'chapter': 5, 'title': 'Управляющие strukтуры: условные операторы'},
-     {'chapter': 6, 'title': 'Управляющие структуры: циклы'},
-     {'chapter': 7, 'title': 'Функции в Python'},
-     {'chapter': 8, 'title': 'Работа с массивами и списками'},
-     {'chapter': 9, 'title': 'Работа со словарями и множествами'},
-     {'chapter': 10,
-      'title': 'Объектно-ориентированное программирование в Python'},
-     {'chapter': 11, 'title': 'Работа с файлами в Python'},
-     {'chapter': 12, 'title': 'Исключения и обработка ошибок'},
-     {'chapter': 13, 'title': 'Модули и библиотеки в Python'},
-     {'chapter': 14, 'title': '-Regularne выразения в Python'}
-]
+class CourseChapter(db.Model):
+    __tablename__ = 'course_chapters'
+    chapter_id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.course_id', ondelete="CASCADE"), nullable=False)
+    chapter_number = db.Column(db.Integer, nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text)
 
 quiz_data = {
     'title': 'Работа со строками и списками в Python',
@@ -167,21 +137,155 @@ quiz_data = {
     ]
 }
 
+def update_chapter(chapter_id, title, content):
+    chapter = CourseChapter.query.get(chapter_id)
+    if chapter:
+        chapter.title = title
+        chapter.content = content
+        db.session.commit()
 
 
+def update_course(course_id, chapter, title, content):
+    # Здесь будет код для обновления курса в базе данных
+    pass
+
+def get_course_chapters(course_id):
+    return CourseChapter.query.filter_by(course_id=course_id).order_by(CourseChapter.chapter_number).all()
+
+# @app.route('/')
+# def index():
+#     return render_template("content.html", book_content=book_content)
 
 @app.route('/')
 def index():
-    return render_template("content.html", book_content=book_content)
-
-@app.route('/login')
-def login():
     return render_template("login.html")
+
+@app.route('/auth', methods=['POST'])
+def auth():
+    form_type = request.form.get('form_type')
+
+    if form_type == 'login':
+        identifier = request.form.get('email')  # это может быть email или username
+        password = request.form.get('password')
+
+        # Поиск по username или email
+        user = User.query.filter(
+            (User.email == identifier) | (User.username == identifier)
+        ).first()
+
+        if user and bcrypt.check_password_hash(user.password, password):
+            flash('Успешный вход!', 'success')
+            return redirect('/')
+        else:
+            flash('Неверный email/имя пользователя или пароль', 'error')
+            return redirect('/')
+
+    elif form_type == 'register':
+        email = request.form.get('email')
+        username = request.form.get('username')
+        university = request.form.get('university')
+        role = request.form.get('role')
+        password = request.form.get('password')
+        confirm = request.form.get('confirm_password')
+
+        if password != confirm:
+            flash('Пароли не совпадают', 'error')
+            return redirect('/')
+
+        if User.query.filter_by(email=email).first():
+            flash('Пользователь с таким email уже существует', 'error')
+            return redirect('/')
+
+        if User.query.filter_by(username=username).first():
+            flash('Пользователь с таким username уже существует', 'error')
+            return redirect('/')
+
+        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+        user = User(username=username, email=email, password=hashed_pw, university=university, role=role)
+        db.session.add(user)
+        db.session.commit()
+
+        flash('Вы успешно зарегистрированы!', 'success')
+        return redirect('/')
+
+    flash('Неверная форма', 'error')
+    return redirect('/')
+
+
+@app.route('/create_course')
+def create_course():
+    return render_template("create_course.html")
+
+
 
 
 @app.route('/quiz')
 def quiz():
     return render_template("quiz.html", book_content=book_content, quiz_title=quiz_data['title'], questions=quiz_data['questions'])
+
+@app.route("/my_courses")
+def my_courses():
+    courses = Course.query.all()
+    return render_template("my_courses.html", courses=courses)
+
+
+
+@app.route("/create_manual", methods=["GET", "POST"])
+def create_manual():
+    if request.method == "POST":
+        title = request.form.get("courseTitle")
+        new_course = Course(title=title)
+
+        db.session.add(new_course)
+        db.session.flush()  # Чтобы получить course_id до коммита
+
+        chapters = []
+        index = 1
+        while True:
+            chapter_title = request.form.get(f"chapterTitle{index}")
+            chapter_content = request.form.get(f"chapterContent{index}")
+            if not chapter_title:
+                break
+            chapter = CourseChapter(
+                course_id=new_course.course_id,
+                chapter_number=index,
+                title=chapter_title,
+                content=chapter_content
+            )
+            chapters.append(chapter)
+            index += 1
+
+        db.session.add_all(chapters)
+        db.session.commit()
+
+        return redirect('/my_courses')
+
+    return render_template("create_manual.html")
+
+
+
+@app.route('/course/<int:course_id>')
+def view_course(course_id):
+    # Получаем главы из базы
+    chapters = CourseChapter.query.filter_by(course_id=course_id).order_by(CourseChapter.chapter_number).all()
+
+    return render_template('content.html', book_content=chapters)
+
+
+@app.route('/course/<int:course_id>/delete')
+def delete_course(course_id):
+    course = Course.query.get_or_404(course_id)
+
+    try:
+        db.session.delete(course)
+        db.session.commit()
+        flash('Курс успешно удалён.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Ошибка при удалении курса: {str(e)}', 'danger')
+
+    return redirect('/my_courses')
+
 
 
 @app.route('/answers', methods=['POST'])
@@ -189,6 +293,32 @@ def answers():
     user_answers = {key: value for key, value in request.form.items()}
     score, total_questions = calculate_score(user_answers)
     return render_template('result.html', book_content=book_content, title='Quiz Result', score=score, total_questions=total_questions)
+
+
+@app.route('/edit_course/<int:id>', methods=['GET', 'POST'])
+def edit_course(id):
+    if request.method == 'POST':
+        for key in request.form:
+            if key.startswith("title_"):
+                parts = key.split("_")
+                if len(parts) < 2 or not parts[1].isdigit():
+                    continue  # пропустить некорректные ключи
+
+                chapter_id = int(parts[1])
+                title = request.form[key]
+                content = request.form.get(f"content_{chapter_id}")
+
+                update_chapter(chapter_id, title, content)
+
+        return redirect('/my_courses')
+
+
+    # Предположим, ты получаешь главы вот так:
+    book_content = get_course_chapters(course_id=id)
+
+    return render_template("edit_course.html", book_content=book_content, course_id=id)
+
+
 
 
 def calculate_score(user_answers):
