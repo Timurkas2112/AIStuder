@@ -2,10 +2,9 @@
 
 {% block content %}
 <style>
-
 body {
   transition: margin-left 0.3s ease;
-  margin-left: 250px; /* ширина панели в открытом состоянии */
+  margin-left: 250px;
 }
 
 body.sidenav-closed {
@@ -27,7 +26,6 @@ body.sidenav-closed {
 .sidenav.closed {
   transform: translateX(-100%);
 }
-
 
 .button {
   border-radius: 8px;
@@ -68,88 +66,90 @@ body.sidenav-closed {
   right: 0;
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 <div id="mySidenav" class="sidenav">
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
   {% for chapter in book_content %}
     <a href="javascript:void(0)" onclick="showChapter('chapter{{ chapter.chapter_number }}')">{{ chapter.chapter_number }}. {{ chapter.title }}</a>
   {% endfor %}
 </div>
-<span id="navToggle" style="font-size:30px;cursor:pointer">&#9776;</span>
 
+<span id="navToggle" style="font-size:30px;cursor:pointer">&#9776;</span>
 
 <div class="content">
   {% for chapter in book_content %}
     <div id="chapter{{ chapter.chapter_number }}" class="chapter">
       <h2>{{ chapter.title }}</h2>
-      <p>{{ chapter.content|safe }}</p>
+      <div class="markdown" data-markdown="{{ chapter.content | replace('"', '&quot;') }}"></div>
       <a href="{{ url_for('quiz') }}">
         <button class="button"><span>Пройти тест</span></button>
       </a>
     </div>
   {% endfor %}
-  
 </div>
 
 <script>
-
-
 const sidenav = document.getElementById("mySidenav");
 const toggleBtn = document.getElementById("navToggle");
 
 function toggleNav() {
   const isClosed = sidenav.classList.contains("closed");
-
   sidenav.classList.toggle("closed");
   document.body.classList.toggle("sidenav-closed");
-
-
 }
 
-// Назначаем поведение
 toggleBtn.addEventListener("click", toggleNav);
 
-
 function openNav() {
-  document.querySelector(".sidenav").classList.remove("closed");
+  sidenav.classList.remove("closed");
   document.body.classList.remove("sidenav-closed");
 }
 
 function closeNav() {
-  document.querySelector(".sidenav").classList.add("closed");
+  sidenav.classList.add("closed");
   document.body.classList.add("sidenav-closed");
 }
 
-  
-  function showChapter(chapterId) {
-    document.querySelectorAll('.chapter').forEach((chapter) => {
-      chapter.classList.remove('active');
-    });
-  
-    const targetChapter = document.getElementById(chapterId);
-    if (targetChapter) {
-      targetChapter.classList.add('active');
-      window.location.hash = chapterId;
+function showChapter(chapterId) {
+  document.querySelectorAll('.chapter').forEach((chapter) => {
+    chapter.classList.remove('active');
+  });
+
+  const targetChapter = document.getElementById(chapterId);
+  if (targetChapter) {
+    targetChapter.classList.add('active');
+    window.location.hash = chapterId;
+  }
+}
+
+function activateChapterFromURL() {
+  const hash = window.location.hash;
+  if (hash) {
+    const chapterId = hash.substring(1);
+    showChapter(chapterId);
+  } else {
+    const firstChapter = document.querySelector('.chapter');
+    if (firstChapter) {
+      firstChapter.classList.add('active');
+      window.location.hash = firstChapter.id;
     }
   }
-  
-  function activateChapterFromURL() {
-    const hash = window.location.hash;
-    if (hash) {
-      const chapterId = hash.substring(1);
-      showChapter(chapterId);
-    } else {
-      // Если якоря нет — показываем первую главу
-      const firstChapter = document.querySelector('.chapter');
-      if (firstChapter) {
-        firstChapter.classList.add('active');
-        window.location.hash = firstChapter.id;
-      }
-    }
-  }
-  
-  window.addEventListener('DOMContentLoaded', activateChapterFromURL);
-  window.addEventListener('hashchange', activateChapterFromURL);
-  </script>
-  
+}
+
+function renderMarkdownChapters() {
+  document.querySelectorAll('.markdown').forEach(el => {
+    const raw = el.dataset.markdown;
+    el.innerHTML = marked.parse(raw || '');
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  activateChapterFromURL();
+  renderMarkdownChapters();
+});
+window.addEventListener('hashchange', activateChapterFromURL);
+</script>
 
 {% endblock %}

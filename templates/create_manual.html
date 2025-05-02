@@ -121,11 +121,40 @@
     .remove-chapter-btn:hover {
         background-color: #c0392b;
     }
+
+    #groupSelect {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 16px;
+  }
+
+  /* Заголовок формы */
+  h3 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+  }
 </style>
 
 <div class="content">
     <form class="form" action="{{ url_for('create_manual') }}" method="POST">
         <h3>Создание курса вручную</h3>
+        
+        <!-- Выбор группы -->
+        <label for="groupSelect">Выберите группу:</label>
+        <select id="groupSelect" name="group_id" required>
+            <option value="">-- Выберите группу --</option>
+            {% for group in groups %}
+                <option value="{{ group.group_id }}" 
+                    {% if group.group_id == selected_group_id %}selected{% endif %}>
+                    {{ group.name }}
+                </option>
+            {% endfor %}
+        </select>
 
         <!-- Название курса -->
         <label for="courseTitle">Название курса:</label>
@@ -210,4 +239,5 @@
         }
     });
 </script>
+
 {% endblock %}

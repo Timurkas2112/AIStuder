@@ -2,6 +2,35 @@
 
 {% block content %}
 <style>
+.form label {
+  font-size: 16px;
+  margin-bottom: 6px;
+  display: block;
+  color: #333;
+}
+
+.form select {
+  height: 60px;
+  width: 100%;
+  padding: 0 15px;
+  font-size: 17px;
+  margin-bottom: 1.3rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  background-color: #fff;
+  font-family: 'Poppins', sans-serif;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%204%205'%3E%3Cpath%20fill='%23009579'%20d='M2%200L0%202h4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 10px;
+}
+
+.form select:focus {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  border-color: #009579;
+}
 .edit-form {
   max-width: 900px;
   margin: 0 auto;
@@ -37,7 +66,34 @@
 .edit-form .submit-btn:hover {
   background-color: #1976D2;
 }
+
+.toolbar {
+  margin-bottom: 10px;
+}
+
+.toolbar button {
+  padding: 5px 10px;
+  margin-right: 5px;
+  border: none;
+  background-color: #eee;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toolbar button:hover {
+  background-color: #ddd;
+}
+
+.preview {
+  border: 1px solid #ddd;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <div class="edit-form">
   <form method="POST" action="{{ url_for('edit_course', id=course_id) }}">
@@ -49,11 +105,60 @@
         <input type="text" name="title_{{ chapter.chapter_id }}" value="{{ chapter.title }}" required>
 
         <label>Содержание</label>
-        <textarea name="content_{{ chapter.chapter_id }}" rows="8" required>{{ chapter.content }}</textarea>
+        <div class="toolbar">
+          <button type="button" onclick="wrapSelection('{{ chapter.chapter_id }}', '**', '**')"><b>Ж</b></button>
+          <button type="button" onclick="wrapSelection('{{ chapter.chapter_id }}', '*', '*')"><i>К</i></button>
+          <button type="button" onclick="wrapSelection('{{ chapter.chapter_id }}', '_', '_')"><u>П</u></button>
+          <!-- <button type="button" onclick="wrapSelection('{{ chapter.chapter_id }}', '<span style=\\'color:red\\'>', '</span>')">Ц</button> -->
+        </div>
+        <textarea id="content_{{ chapter.chapter_id }}" name="content_{{ chapter.chapter_id }}" rows="8" required oninput="updatePreview('{{ chapter.chapter_id }}')">{{ chapter.content }}</textarea>
+        <div class="preview" id="preview_{{ chapter.chapter_id }}"></div>
       </div>
     {% endfor %}
-
+    <div class="form">
+      <label for="groupSelect">Группа:</label>
+      <select id="groupSelect" name="group_id" required>
+        <option value="">Выберите группу</option>
+        {% for group in groups %}
+          <option value="{{ group.group_id }}" {% if group.group_id == selected_group_id %}selected{% endif %}>
+            {{ group.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    
     <button type="submit" class="submit-btn">Сохранить изменения</button>
   </form>
 </div>
+
+<script>
+function wrapSelection(id, before, after) {
+  const textarea = document.getElementById('content_' + id);
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selected = textarea.value.substring(start, end);
+
+  const replacement = before + selected + after;
+  textarea.setRangeText(replacement, start, end, 'end');
+  textarea.focus();
+
+  updatePreview(id);
+}
+
+function updatePreview(id) {
+  const textarea = document.getElementById('content_' + id);
+  const preview = document.getElementById('preview_' + id);
+  if (textarea && preview) {
+    preview.innerHTML = marked.parse(textarea.value);
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('textarea').forEach((ta) => {
+    const id = ta.id.replace('content_', '');
+    updatePreview(id);
+  });
+});
+</script>
 {% endblock %}

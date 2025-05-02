@@ -29,10 +29,20 @@
           <li class="nav-item">
             <a class="nav-link" href="#">Уведомления</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/view_groups">Группы</a>
+          </li>
         </ul>
 
 
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          {% if current_user %}
+          <li class="nav-item">
+            <span class="nav-link disabled">
+              {{ current_user.role | capitalize }}
+            </span>
+          </li>
+        {% endif %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Настройки
@@ -65,6 +75,10 @@
           <li class="nav-item">
             <a class="nav-link" href="#">Мой профиль</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('logout') }}">Выход</a>
+          </li>
+          
         </ul>
       
       </div>

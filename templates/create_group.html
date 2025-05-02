@@ -1,0 +1,160 @@
+{% extends "main.html" %}
+
+{% block content %}
+<style>
+.form label {
+  font-size: 16px;
+  margin-bottom: 6px;
+  display: block;
+  color: #333;
+}
+
+.form input[type="text"],
+.form select {
+  height: 60px;
+  width: 100%;
+  padding: 0 15px;
+  font-size: 17px;
+  margin-bottom: 1.3rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  background-color: #fff;
+  font-family: 'Poppins', sans-serif;
+}
+
+.form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%204%205'%3E%3Cpath%20fill='%23009579'%20d='M2%200L0%202h4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 10px;
+}
+
+.form select:focus,
+.form input[type="text"]:focus {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  border-color: #009579;
+}
+
+.form input.button {
+  color: #fff;
+  background: linear-gradient(135deg, #009579, #007965);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-top: 1.5rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+  border: none;
+  border-radius: 8px;
+  height: 60px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.form input.button:hover {
+  background: linear-gradient(135deg, #007965, #005f4a);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+.form input.button:active {
+  transform: scale(0.98);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Новый стиль для выбранных студентов */
+.selected-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+.selected-user {
+  background-color: #e0f7f5;
+  border: 1px solid #009579;
+  color: #007965;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+.selected-user button {
+  margin-left: 8px;
+  background: none;
+  border: none;
+  color: #007965;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+.selected-user button:hover {
+  color: red;
+}
+</style>
+
+<div class="content">
+  <form class="form" action="{{ url_for('create_group') }}" method="POST">
+    <h3>Создать новую группу</h3>
+
+    <label for="groupName">Название группы:</label>
+    <input type="text" id="groupName" name="group_name" placeholder="Введите название группы" required>
+
+    <label for="studentSelect">Выберите студентов:</label>
+    <select id="studentSelect">
+      <option value="">-- Выберите --</option>
+      {% for student in students %}
+        <option value="{{ student.user_id }}">{{ student.username }} ({{ student.email }})</option>
+      {% endfor %}
+    </select>
+
+    <!-- Показываем выбранных -->
+    <div id="selectedStudents" class="selected-users"></div>
+
+    <!-- Скрытое поле с ID выбранных студентов -->
+    <input type="hidden" name="students" id="studentsInput">
+
+
+    <input type="submit" class="button" value="Создать группу">
+  </form>
+</div>
+
+<script>
+const studentSelect = document.getElementById('studentSelect');
+const selectedStudentsDiv = document.getElementById('selectedStudents');
+const studentsInput = document.getElementById('studentsInput');
+
+let selectedStudents = [];
+
+studentSelect.addEventListener('change', () => {
+  const selectedId = studentSelect.value;
+  const selectedText = studentSelect.options[studentSelect.selectedIndex].text;
+
+  if (selectedId && !selectedStudents.some(s => s.id === selectedId)) {
+    selectedStudents.push({ id: selectedId, text: selectedText });
+    updateSelectedStudents();
+  }
+
+  studentSelect.selectedIndex = 0;
+});
+
+function updateSelectedStudents() {
+  selectedStudentsDiv.innerHTML = '';
+  studentsInput.value = selectedStudents.map(s => s.id).join(',');
+
+  selectedStudents.forEach(({ id, text }) => {
+    const tag = document.createElement('div');
+    tag.className = 'selected-user';
+    tag.innerHTML = `${text} <button type="button" onclick="removeStudent('${id}')">&times;</button>`;
+    selectedStudentsDiv.appendChild(tag);
+  });
+}
+
+function removeStudent(id) {
+  selectedStudents = selectedStudents.filter(s => s.id !== id);
+  updateSelectedStudents();
+}
+</script>
+{% endblock %}

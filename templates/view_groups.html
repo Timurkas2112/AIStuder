@@ -1,0 +1,74 @@
+{% extends "main.html" %}
+
+{% block content %}
+<style>
+.group-card {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+  transition: 0.3s;
+}
+.group-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.group-card h3 {
+  color: #009579;
+  margin-bottom: 10px;
+}
+.group-card ul {
+  margin-left: 20px;
+  padding-left: 0;
+}
+.group-card li {
+  list-style-type: disc;
+}
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #009579;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+.btn:hover {
+  background-color: #007960;
+}
+</style>
+
+<div class="content">
+  <h2 style="margin-bottom: 20px;">Список групп</h2>
+
+  {% for group in groups %}
+    <div class="group-card">
+      <h3>{{ group.name }}</h3>
+
+      <p><strong>Студенты:</strong></p>
+      <ul>
+        {% for student in group.members %}
+          <li>{{ student.username }} ({{ student.email }})</li>
+        {% else %}
+          <li>Нет студентов</li>
+        {% endfor %}
+      </ul>
+
+      <p><strong>Преподаватели:</strong></p>
+      <ul>
+        {% for teacher in group.teachers %}
+          <li>{{ teacher.username }} ({{ teacher.email }})</li>
+        {% else %}
+          <li>Нет преподавателей</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endfor %}
+</div>
+{% if current_user and current_user.role == 'teacher' %}
+  <div style="text-align: center; margin-top: 30px;">
+    <a href="{{ url_for('create_group') }}" class="btn btn-primary">Создать группу</a>
+  </div>
+{% endif %}
+{% endblock %}

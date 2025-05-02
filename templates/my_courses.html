@@ -136,26 +136,42 @@
       {% endfor %}
     </div>
   {% endif %}
-{% endwith %}
+  {% endwith %}
 
   <div class="courses-container">
     {% for course in courses %}
     <div class="course-card">
       <div>
         <div class="course-title">{{ course.title }}</div>
-        <div class="course-group"><strong>Группа:</strong> {{ course.group }}</div>
-        <div class="course-preferences"><strong>Предпочтения:</strong> {{ course.preferences or "Не указано" }}</div>
+  
+        <div class="course-group">
+          <strong>Группа:</strong>
+          {{ course.group.name if course.group else "Не указана" }}
+        </div>
+  
+        <div class="course-teacher">
+          <strong>Преподаватель:</strong>
+          {% if course.group and course.group.teachers %}
+            {{ course.group.teachers[0].username }}
+          {% else %}
+            Не назначен
+          {% endif %}
+        </div>
       </div>
+  
       <div class="course-actions">
         <a href="{{ url_for('view_course', course_id=course.course_id) }}" class="btn-view">Просмотр</a>
-        <a href="{{ url_for('edit_course', id=course.course_id) }}" class="btn-edit">Редактировать</a>
-        <a href="{{ url_for('delete_course', course_id=course.course_id) }}" class="btn-delete" onclick="return confirm('Удалить курс?');">Удалить</a>
+        {% if session.get('role') != 'student' %}
+          <a href="{{ url_for('edit_course', id=course.course_id) }}" class="btn-edit">Редактировать</a>
+          <a href="{{ url_for('delete_course', course_id=course.course_id) }}" class="btn-delete" onclick="return confirm('Удалить курс?');">Удалить</a>
+        {% endif %}
       </div>
     </div>
     {% else %}
     <p>У вас пока нет курсов.</p>
     {% endfor %}
   </div>
+  
 
 <!-- КНОПКА СОЗДАТЬ КУРС -->
 <div class="create-course-container">
