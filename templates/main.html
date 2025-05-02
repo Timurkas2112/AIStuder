@@ -21,10 +21,10 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Мои курсы</a>
+            <a class="nav-link active" aria-current="page" href="/my_courses">Мои курсы</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Статистика</a>
+            <a class="nav-link" href="">Статистика</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">Уведомления</a>
@@ -71,54 +71,11 @@
     </div>
   </nav>
 
-
-<div id="mySidenav" class="sidenav">
-  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-  {% for chapter in book_content %}
-  <a href="/#chapter{{ chapter.chapter }}" onclick="showChapter('chapter{{ chapter.chapter }}')">{{ chapter.chapter }}. {{ chapter.title }}</a>
-  {% endfor %}
-</div>
-<span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776;</span>
 {% block content %}{% endblock %}
 
 
 <script>
 
-function openNav() {
-  document.getElementById("mySidenav").style.width = "250px";
-}
-
-function closeNav() {
-  document.getElementById("mySidenav").style.width = "0";
-}
-// Показ конкретной главы
-  function showChapter(chapterId) {
-    // Убираем класс active у всех глав
-    document.querySelectorAll('.chapter').forEach((chapter) => {
-      chapter.classList.remove('active');
-    });
-
-    // Добавляем класс active нужной главе
-    const targetChapter = document.getElementById(chapterId);
-    if (targetChapter) {
-      targetChapter.classList.add('active');
-    }
-  }
-
-  // Автоматическая активация главы при загрузке страницы
-  function activateChapterFromURL() {
-    const hash = window.location.hash; // Получаем якорь из URL
-    if (hash) {
-      const chapterId = hash.substring(1); // Убираем символ #
-      showChapter(chapterId); // Активируем главу
-    }
-  }
-
-  // Событие загрузки страницы
-  window.addEventListener('DOMContentLoaded', activateChapterFromURL);
-
-  // Событие изменения якоря в URL
-  window.addEventListener('hashchange', activateChapterFromURL);
 
 
   const fontSelect = document.getElementById('fontSelect');
