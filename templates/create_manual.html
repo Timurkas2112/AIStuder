@@ -107,20 +107,21 @@
     }
 
     .remove-chapter-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #e74c3c;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        padding: 6px 10px;
-        cursor: pointer;
-    }
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    float: right;
+}
 
-    .remove-chapter-btn:hover {
-        background-color: #c0392b;
-    }
+.remove-chapter-btn:hover {
+    background-color: #c0392b;
+}
+
 
     #groupSelect {
     width: 100%;
@@ -138,6 +139,118 @@
     font-size: 24px;
     color: #333;
   }
+
+
+/* Кнопка добавления вопроса */
+.add-option-btn {
+    display: inline-block;
+    background-color: #009579;
+    color: white;
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+    margin-top: 10px;
+}
+
+.add-option-btn:hover {
+    background-color: #007965;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.add-option-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Кнопка добавления вопроса */
+.add-quiz-btn {
+    display: inline-block;
+    background-color: #009579;
+    color: white;
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+    margin-top: 10px;
+}
+
+.add-quiz-btn:hover {
+    background-color: #007965;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.add-quiz-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+/* Кнопка удаления вопроса */
+.remove-question-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    float: right;
+}
+
+.remove-question-btn:hover {
+    background-color: #c0392b;
+}
+.quiz-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.quiz-option input[type="text"] {
+    flex-grow: 1;
+}
+
+.correct-answer-radio {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.95rem;
+    color: #333;
+    cursor: pointer;
+}
+
+.correct-answer-radio input[type="radio"] {
+    accent-color: #009579; /* Цвет активной точки (работает в большинстве современных браузеров) */
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+
+.remove-option-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.remove-option-btn:hover {
+    background-color: #c0392b;
+}
+
+
 </style>
 
 <div class="content">
@@ -160,20 +273,12 @@
         <label for="courseTitle">Название курса:</label>
         <input type="text" id="courseTitle" name="courseTitle" placeholder="Введите название курса" required>
 
-        <!-- Секции глав курса -->
-        <div id="chaptersContainer">
-            <div class="addChapter">
-                <button type="button" class="remove-chapter-btn">Удалить</button>
-                <label for="chapterTitle1">Название главы 1:</label>
-                <input type="text" id="chapterTitle1" name="chapterTitle1" placeholder="Введите название главы" required>
-
-                <label for="chapterContent1">Текст главы 1:</label>
-                <textarea id="chapterContent1" name="chapterContent1" placeholder="Введите текст главы" required></textarea>
-            </div>
-        </div>
+        <!-- Контейнер для глав -->
+        <div id="chaptersContainer"></div>
 
         <!-- Кнопка добавления главы -->
         <button type="button" id="addChapterButton">Добавить главу</button>
+
 
         <!-- Кнопка отправки формы -->
         <input type="submit" class="button" value="Сохранить курс">
@@ -186,58 +291,139 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const chaptersContainer = document.getElementById('chaptersContainer');
+document.addEventListener('DOMContentLoaded', function() {
+    const chaptersContainer = document.getElementById('chaptersContainer');
+    const addChapterBtn = document.getElementById('addChapterButton');
 
-        // Функция создания главы с правильным номером
-        function createChapter(index) {
-            const chapter = document.createElement('div');
-            chapter.classList.add('addChapter');
-            chapter.innerHTML = `
-                <button type="button" class="remove-chapter-btn">Удалить</button>
-                <label>Название главы ${index}:</label>
-                <input type="text" name="chapterTitle${index}" placeholder="Введите название главы" required>
-                <label>Текст главы ${index}:</label>
-                <textarea name="chapterContent${index}" placeholder="Введите текст главы" required></textarea>
-            `;
+    // Создание новой главы
+    function createChapter(index) {
+        const chapter = document.createElement('div');
+        chapter.classList.add('addChapter');
+        chapter.innerHTML = `
+            <button type="button" class="remove-chapter-btn">🗑️ Удалить главу</button>
+            <label>Название главы ${index}:</label>
+            <input type="text" name="chapterTitle${index}" placeholder="Введите название главы" required>
+            <label>Текст главы ${index}:</label>
+            <textarea name="chapterContent${index}" placeholder="Введите текст главы" required></textarea>
+            <div class="quizzes-container" data-chapter="${index}"></div>
+            <button type="button" class="add-quiz-btn">➕ Добавить вопрос</button>
+        `;
 
-            // Кнопка удаления
-            chapter.querySelector('.remove-chapter-btn').addEventListener('click', () => {
-                chapter.remove();
-                updateChapterNumbers();  // Обновить нумерацию после удаления
-            });
-
-            return chapter;
-        }
-
-        // Функция обновления номеров глав
-        function updateChapterNumbers() {
-            const chapters = chaptersContainer.querySelectorAll('.addChapter');
-            chapters.forEach((chapter, index) => {
-                const number = index + 1;
-                chapter.querySelector('label:nth-of-type(1)').textContent = `Название главы ${number}:`;
-                chapter.querySelector('input').name = `chapterTitle${number}`;
-                chapter.querySelector('label:nth-of-type(2)').textContent = `Текст главы ${number}:`;
-                chapter.querySelector('textarea').name = `chapterContent${number}`;
-            });
-        }
-
-        // Добавить новую главу
-        document.getElementById('addChapterButton').addEventListener('click', () => {
-            const currentChapters = chaptersContainer.querySelectorAll('.addChapter').length;
-            const newChapter = createChapter(currentChapters + 1);
-            chaptersContainer.appendChild(newChapter);
+        chapter.querySelector('.remove-chapter-btn').addEventListener('click', () => {
+            chapter.remove();
+            updateChapterNumbers();
         });
 
-        // Инициализировать удаление первой главы
-        const firstRemoveBtn = document.querySelector('.remove-chapter-btn');
-        if (firstRemoveBtn) {
-            firstRemoveBtn.addEventListener('click', function () {
-                this.closest('.addChapter').remove();
-                updateChapterNumbers();
-            });
-        }
+        chapter.querySelector('.add-quiz-btn').addEventListener('click', () => {
+            createNewQuestion(chapter, index);
+        });
+
+        return chapter;
+    }
+
+    // Создание нового вопроса (универсальное)
+    function createNewQuestion(chapter, chapterIndex) {
+        const quizzesContainer = chapter.querySelector('.quizzes-container');
+        const questionCount = quizzesContainer.querySelectorAll('.quiz-item').length + 1;
+
+        const questionHTML = `
+            <div class="quiz-item" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+                <button type="button" class="remove-question-btn">🗑️ Удалить вопрос</button>
+                <label>Вопрос ${questionCount}:</label>
+                <input type="text" name="quizQuestion${chapterIndex}_${questionCount}" placeholder="Введите вопрос" required>
+                <div class="quiz-options-container">
+                    <label>Варианты ответа:</label>
+                    <div class="quiz-option">
+                        <input type="text" name="quizOptions${chapterIndex}_${questionCount}_1" placeholder="Вариант 1" required>
+                        <label class="correct-answer-radio">
+                            <input type="radio" name="quizCorrect${chapterIndex}_${questionCount}" value="1" required> ✅
+                        </label>
+                        <button type="button" class="remove-option-btn">🗑️ Удалить</button>
+                    </div>
+                </div>
+                <button type="button" class="add-option-btn">➕ Добавить вариант</button>
+                <label>Пояснение:</label>
+                <textarea name="quizExplanation${chapterIndex}_${questionCount}" placeholder="Пояснение (необязательно)"></textarea>
+            </div>
+        `;
+
+        quizzesContainer.insertAdjacentHTML('beforeend', questionHTML);
+        const newQuiz = quizzesContainer.lastElementChild;
+        setupQuestionEvents(newQuiz, chapterIndex);
+    }
+
+    // Настройка событий для вопроса
+    function setupQuestionEvents(quizElement, chapterIndex) {
+        quizElement.querySelector('.add-option-btn').addEventListener('click', function() {
+    const optionsContainer = this.closest('.quiz-item').querySelector('.quiz-options-container');
+    const chapterIndex = Array.from(chaptersContainer.children).indexOf(this.closest('.addChapter')) + 1;
+    const questionIndex = Array.from(this.closest('.quizzes-container').querySelectorAll('.quiz-item')).indexOf(this.closest('.quiz-item')) + 1;
+    const optionCount = optionsContainer.querySelectorAll('.quiz-option').length + 1;
+
+    const newOptionHTML = `
+        <div class="quiz-option">
+            <input type="text" placeholder="Вариант ${optionCount}" required>
+            <label class="correct-answer-radio">
+                <input type="radio" name="quizCorrect${chapterIndex}_${questionIndex}" value="${optionCount}"> ✅
+            </label>
+            <button type="button" class="remove-option-btn">🗑️ Удалить</button>
+        </div>
+    `;
+    
+    optionsContainer.insertAdjacentHTML('beforeend', newOptionHTML);
+    
+    // Вешаем обработчик удаления на НОВУЮ кнопку
+    optionsContainer.lastElementChild.querySelector('.remove-option-btn').addEventListener('click', function() {
+        this.closest('.quiz-option').remove();
+        reindexOptions(optionsContainer); // Обязательно пересчитываем индексы
     });
+    
+    reindexOptions(optionsContainer); // Фиксим имена полей
+});
+    }
+
+    // Переиндексация вариантов ответа
+    function reindexOptions(optionsContainer) {
+    const quizItem = optionsContainer.closest('.quiz-item');
+    const chapterIndex = Array.from(chaptersContainer.children).indexOf(quizItem.closest('.addChapter')) + 1;
+    const questionIndex = Array.from(quizItem.closest('.quizzes-container').querySelectorAll('.quiz-item')).indexOf(quizItem) + 1;
+
+    optionsContainer.querySelectorAll('.quiz-option').forEach((opt, i) => {
+        const newIndex = i + 1;
+        opt.querySelector('input[type="text"]').name = `quizOptions${chapterIndex}_${questionIndex}_${newIndex}`;
+        opt.querySelector('input[type="radio"]').name = `quizCorrect${chapterIndex}_${questionIndex}`;
+        opt.querySelector('input[type="radio"]').value = newIndex;
+        opt.querySelector('input[type="text"]').placeholder = `Вариант ${newIndex}`;
+    });
+}
+
+    // Обновление номеров глав и вопросов
+    function updateChapterNumbers() {
+        chaptersContainer.querySelectorAll('.addChapter').forEach((chapter, i) => {
+            const newChapterIndex = i + 1;
+            
+            // Обновляем заголовки глав
+            chapter.querySelector('label:nth-of-type(1)').textContent = `Название главы ${newChapterIndex}:`;
+            chapter.querySelector('input[name^="chapterTitle"]').name = `chapterTitle${newChapterIndex}`;
+            chapter.querySelector('label:nth-of-type(2)').textContent = `Текст главы ${newChapterIndex}:`;
+            chapter.querySelector('textarea[name^="chapterContent"]').name = `chapterContent${newChapterIndex}`;
+            
+            // Обновляем вопросы
+            chapter.querySelectorAll('.quiz-item').forEach((quiz, j) => {
+                const newQuestionIndex = j + 1;
+                quiz.querySelector('input[name^="quizQuestion"]').name = `quizQuestion${newChapterIndex}_${newQuestionIndex}`;
+                quiz.querySelector('textarea[name^="quizExplanation"]').name = `quizExplanation${newChapterIndex}_${newQuestionIndex}`;
+                reindexOptions(quiz.querySelector('.quiz-options-container'));
+            });
+        });
+    }
+
+    // Добавление новой главы
+    addChapterBtn.addEventListener('click', () => {
+        const newChapter = createChapter(chaptersContainer.children.length + 1);
+        chaptersContainer.appendChild(newChapter);
+    });
+});
 </script>
 
 {% endblock %}
