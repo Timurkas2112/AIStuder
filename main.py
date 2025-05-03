@@ -204,8 +204,8 @@ def create_manual():
         db.session.commit()
 
         return redirect('/my_courses')
-
-    groups = Group.query.all()
+    user_id = session.get("user_id")
+    groups = Group.query.join(Group.teachers).filter(User.user_id == user_id).all()
     return render_template('create_manual.html', groups=groups, selected_group_id=selected_group_id)
 
 
@@ -244,9 +244,10 @@ def answers():
 
 @app.route('/edit_course/<int:id>', methods=['GET', 'POST'])
 def edit_course(id):
+    user_id = session.get("user_id")
     course = Course.query.get_or_404(id)
     book_content = get_course_chapters(course_id=id)
-    groups = Group.query.all()
+    groups = Group.query.join(Group.teachers).filter(User.user_id == user_id).all()
     selected_group_id = course.group_id if course.group_id else None
 
     if request.method == 'POST':
