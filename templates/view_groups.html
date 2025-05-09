@@ -68,7 +68,7 @@
 </div>
 {% if current_user and current_user.role == 'teacher' %}
   <div style="text-align: center; margin-top: 30px;">
-    <a href="{{ url_for('create_group') }}" class="btn btn-primary">Создать группу</a>
+    <a href="{{ url_for('course.create_group') }}" class="btn btn-primary">Создать группу</a>
   </div>
 {% endif %}
 {% endblock %}

@@ -1,73 +1,243 @@
-.quiz {
+/* Стили для контейнера вариантов ответа */
+.quiz-option {
   display: block;
   position: relative;
   padding-left: 35px;
   margin-bottom: 12px;
   cursor: pointer;
-  font-size: 22px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+  font-size: 16px;
   user-select: none;
+  transition: all 0.2s;
+  padding: 10px 15px 10px 35px;
+  border-radius: 5px;
+  background: #f8f9fa;
 }
 
-/* Hide the browser's default radio button */
-.quiz input {
+/* Состояние при наведении */
+.quiz-option:hover {
+  background: #e9ecef;
+}
+
+/* Скрываем нативные элементы */
+.quiz-option input {
   position: absolute;
   opacity: 0;
-  cursor: pointer;
+  height: 0;
+  width: 0;
 }
 
-/* Create a custom radio button */
-.checkmark {
+/* Кастомный чекбокс/радио */
+.quiz-option .checkmark {
   position: absolute;
-  top: 0;
-  left: 0;
-  height: 25px;
-  width: 25px;
+  top: 10px;
+  left: 10px;
+  height: 20px;
+  width: 20px;
   background-color: #eee;
   border-radius: 50%;
 }
 
-/* On mouse-over, add a grey background color */
-.quiz:hover input ~ .checkmark {
-  background-color: #ccc;
+/* Стиль для чекбоксов (вместо радио) */
+.quiz-option input[type="checkbox"] ~ .checkmark {
+  border-radius: 4px;
 }
 
-/* When the radio button is checked, add a blue background */
-.quiz input:checked ~ .checkmark {
+/* Изменение цвета при выборе */
+.quiz-option input:checked ~ .checkmark {
   background-color: #2196F3;
 }
 
-/* Create the indicator (the dot/circle - hidden when not checked) */
-.checkmark:after {
+/* Индикатор выбора (галочка/точка) */
+.quiz-option .checkmark:after {
   content: "";
   position: absolute;
   display: none;
 }
 
-/* Show the indicator (dot/circle) when checked */
-.quiz input:checked ~ .checkmark:after {
+/* Показываем индикатор при выборе */
+.quiz-option input:checked ~ .checkmark:after {
   display: block;
 }
 
-/* Style the indicator (dot/circle) */
-.quiz .checkmark:after {
- 	top: 9px;
-	left: 9px;
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	background: white;
+/* Стиль точки для радио */
+.quiz-option input[type="radio"] ~ .checkmark:after {
+  top: 6px;
+  left: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
 }
 
-.btn {
+/* Стиль галочки для чекбоксов */
+.quiz-option input[type="checkbox"] ~ .checkmark:after {
+  left: 7px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  background: transparent;
+}
+
+/* Стили кнопок */
+.check-btn, .submit-btn {
   border-radius: 5px;
-  border: none; /* Remove borders */
-  color: white; /* Add a text color */
-  padding: 14px 28px; /* Add some padding */
-  cursor: pointer; /* Add a pointer cursor on mouse-over */
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px;
+  transition: background 0.3s;
+  margin-bottom: 40px; /* Добавляем отступ снизу */
 }
 
-.success {background-color: #04AA6D;} /* Green */
-.success:hover {background-color: #46a049;}
+.check-btn {
+  background-color: #4CAF50;
+}
+
+.check-btn:hover {
+  background-color: #45a049;
+}
+
+.submit-btn {
+  background-color: #2196F3;
+}
+
+.submit-btn:hover {
+  background-color: #0b7dda;
+}
+
+/* Стили для результатов */
+.result, .explanation {
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 5px;
+}
+
+.result {
+  background-color: #f8f9fa;
+  border-left: 4px solid #ffc107;
+}
+
+.explanation {
+  background-color: #e8f5e9;
+  border-left: 4px solid #4CAF50;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #f8f9fa;
+  color: #212529;
+  border-radius: 5px;
+  text-decoration: none;
+  border-left: 4px solid #2196F3;
+  transition: background 0.3s, color 0.3s;
+}
+
+.back-link:hover {
+  background-color: #e9ecef;
+  color: #0b7dda;
+}
+
+/* Контейнер навигации */
+.chapter-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+  gap: 15px;
+  margin-bottom: 40px; /* Добавляем отступ снизу */
+}
+
+/* Общий стиль кнопок */
+.nav-button {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #f8f9fa;
+  color: #212529;
+  border-radius: 5px;
+  text-decoration: none;
+  border-left: 4px solid;
+  transition: background 0.3s, color 0.3s;
+  text-align: center;
+  flex: 1;
+}
+
+/* Неактивная кнопка */
+.disabled-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-left-color: #cccccc;
+}
+
+/* Предыдущая глава */
+.prev-chapter {
+  border-left-color: #2196F3;
+}
+
+.prev-chapter:hover {
+  background-color: #e9ecef;
+  color: #0b7dda;
+}
+
+/* Следующая глава */
+.next-chapter {
+  border-left-color: #4CAF50;
+}
+
+.next-chapter:hover {
+  background-color: #e9ecef;
+  color: #45a049;
+}
+
+/* Тест */
+.quiz-button {
+  border-left-color: #ff9800;
+}
+
+.quiz-button:hover {
+  background-color: #e9ecef;
+  color: #e68a00;
+}
+
+/* Активное состояние */
+.nav-button:active {
+  transform: translateY(1px);
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+  .chapter-navigation {
+    flex-direction: column;
+  }
+  
+  .nav-button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .nav-button:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.quistion-text {
+  font-weight: 650; /* Очень жирный (если шрифт поддерживает) */
+  font-size: 1.5rem; /* Крупный размер (можно увеличить до 3rem) */
+  margin: 1.5rem 0;
+  color: #222; /* Почти черный для лучшей читаемости */
+}
+.quistion-title {
+  font-weight: 650; /* Очень жирный (если шрифт поддерживает) */
+  font-size: 2rem; /* Крупный размер (можно увеличить до 3rem) */
+  margin: 1.5rem 0;
+  color: #222; /* Почти черный для лучшей читаемости */
+}

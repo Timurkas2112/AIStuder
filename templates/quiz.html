@@ -4,81 +4,110 @@
 <head>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/quiz.css') }}" />
 </head>
+
 <div class="content">
-    <h1>{{ quiz_title }}</h1>
 
-<form id="quizForm">
-    {% for question in questions %}
-        <div id="question-{{ question['id'] }}" class="question-block">
-            <h2>{{ question['question_text'] }}</h2>
-            {% for option in question['options'] %}
-                <label class="quiz">{{ option }}
-                    <input type="radio" name="{{ question['id'] }}" value="{{ option }}">
-                    <span class="checkmark"></span>
-                </label><br>
+    
+    <h1 class="quistion-title">{{ quiz_title }}</h1>
+    <form id="quizForm">
+        {% for question in questions %}
+        <div class="question-block">
+            <h2 class="quistion-text">{{ question.question_text }}</h2>
+            {% for option in question.options %}
+              <label class="quiz-option">
+                {{ option }}
+                <input type="{% if question.question_type == 'multiple' %}checkbox{% else %}radio{% endif %}" 
+                       name="question_{{ question.id }}" 
+                       value="{{ loop.index }}">
+                <span class="checkmark"></span>
+              </label>
             {% endfor %}
-            <button class="btn success" type="button" onclick="checkAnswer('{{ question['id'] }}')">Проверить</button>
-            <div id="result-{{ question['id'] }}" class="result" style="margin-top: 10px; display: none;"></div>
-        </div>
-    {% endfor %}
-</form>
+                <button type="button" class="check-btn" onclick="checkAnswer({{ question.id }})">
+                    Проверить
+                </button>
+                <div id="result-{{ question.id }}" class="result" style="margin-top: 10px; display: none;"></div>
+                {% if question.explanation %}  <!-- Только если есть объяснение -->
+                <div id="explanation-{{ question.id }}" class="explanation" style="display: none;">
+                    {{ question.explanation }}
+                </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    
+    <!-- Блок навигации -->
+    <div class="chapter-navigation">
+        {% if prev_chapter_url %}
+            <a href="{{ prev_chapter_url }}" class="nav-button prev-chapter">← Предыдущая глава</a>
+        {% else %}
+            <span class="nav-button disabled-button">← Предыдущая глава</span>
+        {% endif %}
+    
+        {% if next_chapter_url %}
+            <a href="{{ next_chapter_url }}" class="nav-button {% if next_chapter_is_quiz %}quiz-button{% else %}next-chapter{% endif %}">
+                {% if next_chapter_is_quiz %}Тест →{% else %}Следующая глава →{% endif %}
+            </a>
+        {% else %}
+            <span class="nav-button disabled-button">Следующая глава →</span>
+        {% endif %}
+    </div>    
+        <!-- <button type="submit" id="submitButton" class="submit-btn">Завершить тест</button> -->
+    </form>
+</div>
 
-<div id="result" style="margin-top: 20px; display: none;">
-    <h2>Результат:</h2>
-    <p id="score"></p>
-</div>
-</div>
 <script>
-
-    // Добавляем обработчик события отправки формы
-    document.getElementById('quizForm').addEventListener('submit', function(e) {
-        const submitButton = document.getElementById('submitButton');
-
-        // Отключаем кнопку после первого нажатия
-        submitButton.disabled = true;
-
-        // Изменяем текст кнопки (опционально)
-        submitButton.textContent = 'Отправляется...';
-    });
-    const correctAnswers = {
-        {% for question in questions %}
-        "{{ question['id'] }}": "{{ question['correct_answer'] }}"{% if not loop.last %},{% endif %}
-        {% endfor %}
-    };
-    const explanations = {
-        {% for question in questions %}
-        "{{ question['id'] }}": "{{ question['explanation'] }}"{% if not loop.last %},{% endif %}
-        {% endfor %}
-    };
     function checkAnswer(questionId) {
-    // Получаем выбранный вариант ответа
-    const selectedOption = document.querySelector(`input[name="${questionId}"]:checked`);
-    const resultDiv = document.getElementById(`result-${questionId}`);
-
-    if (!selectedOption) {
-        // Если ничего не выбрано, показываем сообщение
-        resultDiv.innerHTML = '<p style="color: red;">Пожалуйста, выберите вариант ответа.</p>';
+        const selectedOption = document.querySelector(`input[name="question_${questionId}"]:checked`);
+        const resultDiv = document.getElementById(`result-${questionId}`);
+        const explanationDiv = document.getElementById(`explanation-${questionId}`);
+    
+        if (!selectedOption) {
+            resultDiv.innerHTML = '<p style="color: red;">Пожалуйста, выберите вариант ответа.</p>';
+            resultDiv.style.display = 'block';
+            return;
+        }
+    
+        const userAnswer = selectedOption.value;
+        const isCorrect = userAnswer === correctAnswers[questionId];
+    
+        resultDiv.innerHTML = isCorrect 
+            ? '<p style="color: green;">Правильно!</p>'
+            : '<p style="color: red;">Неправильно. Правильный ответ: ' + correctAnswers[questionId] + '</p>';
+        
+        if (explanationDiv) {  // Показываем только если элемент существует
+            explanationDiv.style.display = 'block';
+        }
         resultDiv.style.display = 'block';
-        return;
     }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const correctAnswers = {
+            {% for question in questions %}
+            "{{ question.id }}": "{{ question.correct_answer }}"{% if not loop.last %},{% endif %}
+            {% endfor %}
+        };
+        
+        const explanations = {
+            {% for question in questions %}
+            "{{ question.id }}": "{{ question.explanation }}"{% if not loop.last %},{% endif %}
+            {% endfor %}
+        };
+    
+        // Делаем correctAnswers доступным глобально
+        window.correctAnswers = correctAnswers;
+    
+        // Обработчик отправки формы
+        document.getElementById('quizForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitButton = document.getElementById('submitButton');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Тест завершён';
+    
+            document.querySelectorAll('.question-block').forEach(block => {
+                const questionId = block.querySelector('button').getAttribute('onclick').match(/\d+/)[0];
+                checkAnswer(questionId);
+            });
+        });
+    });
+    </script>
 
-    // Проверяем ответ
-    const userAnswer = selectedOption.value;
-    let resultText = '';
-    let explanationText = explanations[questionId]; // Получаем объяснение для вопроса
-
-    if (userAnswer === correctAnswers[questionId]) {
-        resultText = '<p style="color: green;">Правильно!</p>';
-    } else {
-        resultText = '<p style="color: red;">Неправильно. Попробуйте ещё раз.</p>';
-    }
-
-    // Добавляем объяснение (всегда показываем, независимо от правильности ответа)
-    let explanationHtml = `<p style="color: black;">Объяснение: ${explanationText}</p>`;
-
-    // Отображаем результат и объяснение
-    resultDiv.innerHTML = resultText + explanationHtml;
-    resultDiv.style.display = 'block';
-}
-</script>
 {% endblock %}

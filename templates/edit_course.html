@@ -96,7 +96,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <div class="edit-form">
-  <form method="POST" action="{{ url_for('edit_course', id=course_id) }}">
+  <form method="POST" action="{{ url_for('course.edit_course', id=course_id) }}">
     {% for chapter in book_content %}
       <div class="chapter-block">
         <h3>Глава {{ loop.index }}</h3>

@@ -160,10 +160,10 @@
       </div>
   
       <div class="course-actions">
-        <a href="{{ url_for('view_course', course_id=course.course_id) }}" class="btn-view">Просмотр</a>
+        <a href="{{ url_for('viewer.view_course', course_id=course.course_id) }}" class="btn-view">Просмотр</a>
         {% if session.get('role') != 'student' %}
-          <a href="{{ url_for('edit_course', id=course.course_id) }}" class="btn-edit">Редактировать</a>
-          <a href="{{ url_for('delete_course', course_id=course.course_id) }}" class="btn-delete" onclick="return confirm('Удалить курс?');">Удалить</a>
+          <a href="{{ url_for('course.edit_course', id=course.course_id) }}" class="btn-edit">Редактировать</a>
+          <a href="{{ url_for('course.delete_course', course_id=course.course_id) }}" class="btn-delete" onclick="return confirm('Удалить курс?');">Удалить</a>
         {% endif %}
       </div>
     </div>
@@ -175,7 +175,7 @@
 
 <!-- КНОПКА СОЗДАТЬ КУРС -->
 <div class="create-course-container">
-  <a href="{{ url_for('create_course') }}" class="create-course-button">Создать курс</a>
+  <a href="{{ url_for('course.generate_course') }}" class="create-course-button">Создать курс</a>
 </div>
 </div>
 {% endblock %}

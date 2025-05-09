@@ -10,7 +10,6 @@ app.secret_key = 'secret_key'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
-
 class User(db.Model):
     __tablename__ = "users"
     user_id = db.Column(db.Integer, primary_key=True)
@@ -56,7 +55,6 @@ class Course(db.Model):
     teacher = db.relationship('User', backref='courses')
 
 
-
 class CourseChapter(db.Model):
     __tablename__ = 'course_chapters'
     chapter_id = db.Column(db.Integer, primary_key=True)
@@ -64,96 +62,24 @@ class CourseChapter(db.Model):
     chapter_number = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text)
+    
+    # Связь один-к-одному с тестом
+    quiz = db.relationship('Quiz', backref='chapter', uselist=False, cascade="all, delete-orphan")
 
+class Quiz(db.Model):
+    __tablename__ = 'quizzes'
+    quiz_id = db.Column(db.Integer, primary_key=True)
+    chapter_id = db.Column(db.Integer, db.ForeignKey('course_chapters.chapter_id', ondelete="CASCADE"), unique=True)  # Один тест → одна глава
+    title = db.Column(db.String(255), nullable=False, default="Тест к главе")
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.course_id', ondelete="CASCADE"), nullable=False)  # Добавлено
+    questions = db.relationship('QuizQuestion', backref='quiz', cascade="all, delete-orphan")
 
-
-quiz_data = {
-    'title': 'Работа со строками и списками в Python',
-    'questions': [
-        {
-            'id': 1,
-            'question_text': 'Какой оператор используется для конкатенации (объединения) строк в Python?',
-            'options': ['+', '-', '*', '/'],
-            'correct_answer': '+',
-            'explanation': 'Оператор "+" используется для сложения (конкатенации) строк.'
-        },
-        {
-            'id': 2,
-            'question_text': 'Что произойдет, если применить оператор "*" к строке и числу?',
-            'options': [
-                'Возникнет ошибка',
-                'Строка будет повторена указанное число раз',
-                'Строка будет умножена на число',
-                'Число будет добавлено к строке'
-            ],
-            'correct_answer': 'Строка будет повторена указанное число раз',
-            'explanation': 'Оператор "*" повторяет строку указанное количество раз.'
-        },
-        {
-            'id': 3,
-            'question_text': 'Как получить доступ к третьему символу строки "Python"?',
-            'options': ['string[3]', 'string[2]', 'string[-3]', 'string[4]'],
-            'correct_answer': 'string[2]',
-            'explanation': 'Индексация в Python начинается с 0.  Третий символ имеет индекс 2.'
-        },
-        {
-            'id': 4,
-            'question_text': 'Какой метод используется для преобразования строки в верхний регистр?',
-            'options': ['lower()', 'upper()', 'capitalize()', 'title()'],
-            'correct_answer': 'upper()',
-            'explanation': 'Метод upper() преобразует строку в верхний регистр.'
-        },
-        {
-            'id': 5,
-            'question_text': 'Что возвращает метод `split()` для строки "Это строка с пробелами"?',
-            'options': [
-                '"Это строка с пробелами"',
-                '["Это", "строка", "с", "пробелами"]',
-                '["Это строка с пробелами"]',
-                'Ошибка'
-            ],
-            'correct_answer': '["Это", "строка", "с", "пробелами"]',
-            'explanation': 'Метод split() разделяет строку на список подстрок по разделителю (пробелу по умолчанию).'
-        },
-        {
-            'id': 6,
-            'question_text': 'Как добавить элемент в конец списка?',
-            'options': ['list.append(element)', 'list.insert(0, element)', 'list.extend(element)', 'list.add(element)'],
-            'correct_answer': 'list.append(element)',
-            'explanation': 'Метод append() добавляет элемент в конец списка.'
-        },
-        {
-            'id': 7,
-            'question_text': 'Какой метод удаляет и возвращает последний элемент списка?',
-            'options': ['list.remove()', 'list.pop()', 'list.del()', 'list.delete()'],
-            'correct_answer': 'list.pop()',
-            'explanation': 'Метод pop() удаляет и возвращает последний элемент списка (или элемент по указанному индексу).'
-        },
-        {
-            'id': 8,
-            'question_text': 'Являются ли списки в Python изменяемыми?',
-            'options': ['Да', 'Нет'],
-            'correct_answer': 'Да',
-            'explanation': 'Списки в Python являются изменяемыми, в отличие от строк.'
-        },
-        {
-            'id': 9,
-            'question_text': 'Что такое срезы (slices) в Python?',
-            'options': [
-                'Способ удаления элементов из списка',
-                'Способ извлечения подпоследовательности из строки или списка',
-                'Способ сортировки списка',
-                'Способ объединения списков'
-            ],
-            'correct_answer': 'Способ извлечения подпоследовательности из строки или списка',
-            'explanation': 'Срезы позволяют извлечь часть строки или списка.'
-        },
-        {
-            'id': 10,
-            'question_text': 'Можно ли в одном списке хранить элементы разных типов данных?',
-            'options': ['Да', 'Нет'],
-            'correct_answer': 'Да',
-            'explanation': 'Списки в Python могут содержать элементы различных типов данных.'
-        }
-    ]
-}
+class QuizQuestion(db.Model):
+    __tablename__ = 'quiz_questions'
+    question_id = db.Column(db.Integer, primary_key=True)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quizzes.quiz_id', ondelete="CASCADE"), nullable=False)
+    question_text = db.Column(db.Text, nullable=False)
+    options = db.Column(db.ARRAY(db.Text), nullable=False)  # Массив вариантов
+    correct_answer = db.Column(db.Text, nullable=False)  # Может быть "1" или "1,3" для нескольких
+    question_type = db.Column(db.String(10), nullable=False, default='single')  # Добавляем поле для типа вопроса
+    explanation = db.Column(db.Text)

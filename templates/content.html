@@ -65,6 +65,127 @@ body.sidenav-closed {
   opacity: 1;
   right: 0;
 }
+/* Контейнер навигации */
+.chapter-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+  gap: 15px;
+}
+
+/* Общий стиль кнопок навигации */
+.chapter-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+  gap: 15px;
+  margin-bottom: 40px; /* Добавляем отступ снизу */
+}
+
+.nav-button {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #f8f9fa;
+  color: #212529;
+  border-radius: 5px;
+  text-decoration: none;
+  border-left: 4px solid;
+  transition: all 0.3s ease;
+  text-align: center;
+  flex: 1;
+}
+
+/* Неактивная кнопка */
+.nav-button.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #e9ecef;
+  border-left-color: #adb5bd;
+}
+
+/* Предыдущая глава */
+.prev-chapter:not(.disabled) {
+  border-left-color: #2196F3;
+}
+
+.prev-chapter:not(.disabled):hover {
+  background-color: #e3f2fd;
+  color: #0b7dda;
+}
+
+/* Следующая глава */
+.next-chapter:not(.disabled) {
+  border-left-color: #4CAF50;
+}
+
+.next-chapter:not(.disabled):hover {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* Тест */
+.quiz-button:not(.disabled) {
+  border-left-color: #ff9800;
+}
+
+.quiz-button:not(.disabled):hover {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+  .chapter-navigation {
+    flex-direction: column;
+  }
+  
+  .nav-button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .nav-button:last-child {
+    margin-bottom: 0;
+  }
+}
+.chapter-title {
+  font-weight: 650; /* Очень жирный (если шрифт поддерживает) */
+  font-size: 2rem; /* Крупный размер (можно увеличить до 3rem) */
+  margin: 1.5rem 0;
+  color: #222; /* Почти черный для лучшей читаемости */
+}
+
+/* Стили для Markdown-контента */
+.markdown {
+  line-height: 1.6; /* Межстрочный интервал */
+}
+
+.markdown p {
+  margin-bottom: 1em; /* Отступ снизу для абзацев */
+  text-align: justify; /* Выравнивание по ширине */
+}
+
+.markdown p:not(:first-child) {
+  text-indent: 1.5em; /* Красная строка для всех абзацев, кроме первого */
+}
+
+/* Дополнительные стили для других элементов Markdown */
+.markdown ul, .markdown ol {
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+.markdown pre {
+  background-color: #f5f5f5;
+  padding: 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -72,7 +193,16 @@ body.sidenav-closed {
 <div id="mySidenav" class="sidenav">
   <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
   {% for chapter in book_content %}
-    <a href="javascript:void(0)" onclick="showChapter('chapter{{ chapter.chapter_number }}')">{{ chapter.chapter_number }}. {{ chapter.title }}</a>
+    <div class="chapter-nav-item">
+      <a href="javascript:void(0)" onclick="showChapter('chapter{{ chapter.chapter_number }}')">
+        {{ chapter.chapter_number }}. {{ chapter.title }}
+      </a>
+      {% if chapter.quiz %}
+        <a href="{{ url_for('viewer.take_quiz', quiz_id=chapter.quiz.quiz_id) }}" class="quiz-link">
+          🧠 Тест к главе {{ chapter.chapter_number }}
+        </a>
+      {% endif %}
+    </div>
   {% endfor %}
 </div>
 
@@ -81,11 +211,31 @@ body.sidenav-closed {
 <div class="content">
   {% for chapter in book_content %}
     <div id="chapter{{ chapter.chapter_number }}" class="chapter">
-      <h2>{{ chapter.title }}</h2>
-      <div class="markdown" data-markdown="{{ chapter.content | replace('"', '&quot;') }}"></div>
-      <a href="{{ url_for('quiz') }}">
-        <button class="button"><span>Пройти тест</span></button>
-      </a>
+      <h1 class="chapter-title">{{ chapter.title }}</h1>
+      <div class="markdown">{{ chapter.content }}</div>
+      
+      <!-- В теле документа: -->
+      <div class="chapter-navigation">
+        {% if loop.index0 > 0 %}  <!-- Если есть предыдущая глава -->
+          <a href="#chapter{{ chapter.chapter_number - 1 }}" class="nav-button prev-chapter">
+            ← Предыдущая глава
+          </a>
+        {% else %}
+          <span class="nav-button disabled">← Предыдущая глава</span>
+        {% endif %}
+        
+        {% if chapter.quiz %}  <!-- Если есть тест -->
+          <a href="{{ url_for('viewer.take_quiz', quiz_id=chapter.quiz.quiz_id) }}" class="nav-button quiz-button">
+            Пройти тест →
+          </a>
+        {% elif not loop.last %}  <!-- Если есть следующая глава -->
+          <a href="#chapter{{ chapter.chapter_number + 1 }}" class="nav-button next-chapter">
+            Следующая глава →
+          </a>
+        {% else %}
+          <span class="nav-button disabled">Следующая глава →</span>
+        {% endif %}
+      </div>
     </div>
   {% endfor %}
 </div>
@@ -93,6 +243,20 @@ body.sidenav-closed {
 <script>
 const sidenav = document.getElementById("mySidenav");
 const toggleBtn = document.getElementById("navToggle");
+
+document.querySelectorAll('.chapter-navigation a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    if (this.getAttribute('href').startsWith('#')) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href');
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth' });
+        showChapter(targetId.substring(1));
+      }
+    }
+  });
+});
 
 function toggleNav() {
   const isClosed = sidenav.classList.contains("closed");
@@ -138,12 +302,21 @@ function activateChapterFromURL() {
   }
 }
 
+function processMarkdown(content) {
+  // Заменяем \n на настоящие переносы строк
+  content = content.replace(/\\n/g, '\n');
+  // Обрабатываем Markdown
+  return marked.parse(content);
+}
+
 function renderMarkdownChapters() {
   document.querySelectorAll('.markdown').forEach(el => {
-    const raw = el.dataset.markdown;
-    el.innerHTML = marked.parse(raw || '');
+    // Получаем содержимое напрямую из текстового узла
+    const raw = el.textContent.trim();
+    el.innerHTML = processMarkdown(raw);
   });
 }
+
 
 window.addEventListener('DOMContentLoaded', () => {
   activateChapterFromURL();
